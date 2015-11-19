@@ -55,20 +55,20 @@ class NovaCourse(object):
                  enrollment, days, start_time, end_time, location, instructor,
                  comment, attributes, restrictions):
 
-        self.subject = subject
-        self.course_number = course_number
+        self.subject        = subject
+        self.course_number  = course_number
         self.section_number = section_number
-        self.course_name = course_name
-        self.crn = crn
-        self.enrollment = enrollment
-        self.days = days
-        self.start_time = start_time
-        self.end_time = end_time
-        self.location = location,
-        self.instructor = instructor
-        self.comment = comment
-        self.attributes = attributes
-        self.restrictions = restrictions
+        self.course_name    = course_name
+        self.crn            = crn
+        self.enrollment     = enrollment
+        self.days           = days
+        self.start_time     = start_time
+        self.end_time       = end_time
+        self.location       = location
+        self.instructor     = instructor
+        self.comment        = comment
+        self.attributes     = attributes
+        self.restrictions   = restrictions
 
     def __str__(self):
         return "{0} : {1}".format(self.subject, self.crn)
@@ -81,12 +81,18 @@ class NovaCourseScraper(object):
         self.length = len(self.courses)
 
     def scrape_html(self, filename):
+        """
+        Scrapes the course object from a HTML file supplied as input
+        """
         print "Scraping {}".format(filename)
-        course_page = BeautifulSoup(open('{}'.format(filename)))
+        course_page  = BeautifulSoup(open('{}'.format(filename)))
         self.courses = self._create_course_objects(course_page)
 
     def scrape_request(self, request):
-        course_page = BeautifulSoup(request.text)
+        """
+        Scrapes the course object from a live request which is supplied as input
+        """
+        course_page  = BeautifulSoup(request.text)
         self.courses = self._create_course_objects(course_page)
 
     def _get_course_subject_groupings(self, course_page):
@@ -102,6 +108,7 @@ class NovaCourseScraper(object):
         """
         course_headings = course_page.findAll('th') # return an array of all of the course headings
         course_info = course_page.findAll('td', {'class': 'dddefault'})
+
         return (course_headings, course_info)
 
     def _get_course_header_info(self, course_heading):
@@ -124,12 +131,13 @@ class NovaCourseScraper(object):
             print "No regex match for string {}".format(course_heading.text)
             raise AttributeError
 
-        subject = match.group(1).strip()
-        course_number = match.group(2).strip()
+        subject        = match.group(1).strip()
+        course_number  = match.group(2).strip()
         section_number = match.group(4).strip()
-        course_name = match.group(5).strip()
-        crn = match.group(7).strip()
-        enrollment = match.group(9).strip()
+        course_name    = match.group(5).strip()
+        crn            = match.group(7).strip()
+        enrollment     = match.group(9).strip()
+
         return (subject, course_number, section_number, course_name, crn, enrollment)
 
     def _get_course_body_info(self, course_body):
@@ -145,12 +153,13 @@ class NovaCourseScraper(object):
         'restrictions': u'Must be enrolled in one of the following Levels: Undergraduate May not be enrolled in one of the following Campuses: University Alliance Prerequisites: ( CSC 1300 or MAT 2600) and ( CSC 1052 or ECE 2620)'}
         """
         match = re.match(r'(?:Syllabus Available )?(Days:.*?)(Location:.*?)?(Comment:.*?)?(Instructors:.*?)?(Attributes:.*?)?(Comment:.*?)?(Restrictions:.*?)?(Prerequisites:.*)?\Z', ' '.join(course_body.text.split()))
-        info_dict = {'days': None,
-                     'location': None,
-                     'instructors': None,
-                     'comment': None,
-                     'attributes': None,
-                     'restrictions': None
+        info_dict = {
+            'days': None,
+            'location': None,
+            'instructors': None,
+            'comment': None,
+            'attributes': None,
+            'restrictions': None
         }
         for re_match in match.groups():
             if re_match is not None:
@@ -227,13 +236,16 @@ class NovaCourseScraper(object):
         """
         if course_dict['attributes'] == None:
             return []
+
         attributes = []
         attributes_no_quotes = course_dict['attributes'].split("\'") # split on quotes
+        
         for attribute in attributes_no_quotes:
             if attribute == 'Eth, Econ, Public Pol Elect' or attribute == 'Ethics, Politics, Law Elect':
                 attributes.append(attribute)
             else:
                 attributes = attributes + attribute.split(',')
+        
         return [attribute.strip() for attribute in attributes if attribute != u' ' and attribute != u'']
 
     def _get_restrictions(self, course_dict):
@@ -262,12 +274,12 @@ class NovaCourseScraper(object):
         """
 
         subject, course_number, section_number, course_name, crn, enrollment = self._get_course_header_info(course_heading_tag)
-        course_dict = self._get_course_body_info(course_info_body_tag)
+        course_dict                = self._get_course_body_info(course_info_body_tag)
         days, start_time, end_time = self._get_time_and_days(course_dict)
-        location = self._get_location(course_dict)
-        instructor = self._get_instructors(course_dict)
-        comment = self._get_comment(course_dict)
-        attributes = self._get_attributes(course_dict)
+        location                   = self._get_location(course_dict)
+        instructor                 = self._get_instructors(course_dict)
+        comment                    = self._get_comment(course_dict)
+        attributes                 = self._get_attributes(course_dict)
         #if attributes is not None:
             #print attributes
         restrictions = self._get_restrictions(course_dict)
@@ -277,8 +289,11 @@ class NovaCourseScraper(object):
                           comment, attributes, restrictions)
 
     def _create_course_objects(self, course_page):
-        course_headings_tags, course_info_bodies_tags = self._get_course_tags(course_page)
         course_objects = []
+        course_headings_tags, course_info_bodies_tags = self._get_course_tags(course_page)
+        
+
         for i in range(len(course_headings_tags)):
             course_objects.append(self._create_course_object(course_headings_tags[i], course_info_bodies_tags[i]).__dict__)
+
         return course_objects
