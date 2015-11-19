@@ -1,5 +1,3 @@
-# pylint: disable=R0201
-# Python Imports
 import urllib2
 import re
 
