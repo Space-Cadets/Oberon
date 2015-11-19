@@ -215,6 +215,7 @@ class NovaCourseScraper(object):
         """
         if course_dict['instructors'] == None:
             return []
+
         return [ prof.strip() for prof in course_dict['instructors'].replace('(P)', '').split(',') ]
 
     def _get_comment(self, course_dict):
@@ -266,6 +267,7 @@ class NovaCourseScraper(object):
             match = re.match(r'(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?\Z', restrictions)
         except AttributeError:
             print "No regex match for string {}".format(restrictions)
+            
         return [ restriction.strip() for restriction in match.groups() if restriction is not None ]
 
     def _create_course_object(self, course_heading_tag, course_info_body_tag):
