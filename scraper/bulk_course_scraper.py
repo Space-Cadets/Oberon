@@ -85,7 +85,7 @@ class NovaCourseScraper(object):
         Scrapes the course object from a HTML file supplied as input
         """
         print "Scraping {}".format(filename)
-        course_page  = BeautifulSoup(open('{}'.format(filename)))
+        course_page  = BeautifulSoup(open('{}'.format(filename)), 'html.parser')
         self.courses = self._create_course_objects(course_page)
 
     def scrape_request(self, request):
@@ -267,7 +267,7 @@ class NovaCourseScraper(object):
             match = re.match(r'(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?\Z', restrictions)
         except AttributeError:
             print "No regex match for string {}".format(restrictions)
-            
+
         return [ restriction.strip() for restriction in match.groups() if restriction is not None ]
 
     def _create_course_object(self, course_heading_tag, course_info_body_tag):
@@ -299,3 +299,9 @@ class NovaCourseScraper(object):
             course_objects.append(self._create_course_object(course_headings_tags[i], course_info_bodies_tags[i]).__dict__)
 
         return course_objects
+
+
+if __name__ == '__main__':
+    spring16 = NovaCourseScraper()
+    spring16.scrape_html('output.html')
+    # print spring16.courses
