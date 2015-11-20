@@ -1,9 +1,17 @@
 #from flask import flask
-from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy import *
+from sqlalchemy.engine.url import URL
+import os, sys
 
+# Relative path support -- great snippet
+lib_path = os.path.abspath(os.path.join('..'))
+sys.path.append(lib_path)
 
-db = SQLAlchemy()
+import private
 
+print private.db
+
+"""
 class Student(db.Model):
     pass
 
@@ -30,5 +38,4 @@ class Semester(db.Model):
 
 class Location(db.Model):
     pass
-
-
+"""

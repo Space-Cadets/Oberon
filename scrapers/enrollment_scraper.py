@@ -1,8 +1,20 @@
 import urllib2
 import re
+import argparse
 
 # Other Imports
 from bs4 import BeautifulSoup
+
+""" 
+
+How to Use:
+   TO SCRAPE
+   python enrollment_scraper.py -f [html_file_name]
+
+   FOR MORE INFO
+   python enrollment_scraper.py -h
+
+"""
 
 class Enrollment(object):
 
@@ -25,9 +37,13 @@ class EnrollmentScraper(object):
         Scrapes the course object from a HTML file supplied as input
         """
         print "Scraping {}".format(filename)
-        course_page  = BeautifulSoup(open('{}'.format(filename)), 'html.parser')
-        self.courses = self._create_course_objects(course_page)
-
+        
+        try:
+            course_page  = BeautifulSoup(open('{}'.format(filename)), 'html.parser')
+            self.courses = self._create_course_objects(course_page)    
+        except IOError, e:
+            print e
+        
     def scrape_request(self, request):
         """
         Scrapes the course object from a live request which is supplied as input
@@ -93,6 +109,7 @@ class EnrollmentScraper(object):
         'restrictions': u'Must be enrolled in one of the following Levels: Undergraduate May not be enrolled in one of the following Campuses: University Alliance Prerequisites: ( CSC 1300 or MAT 2600) and ( CSC 1052 or ECE 2620)'}
         """
         match = re.match(r'(?:Syllabus Available )?(Days:.*?)(Location:.*?)?(Comment:.*?)?(Instructors:.*?)?(Attributes:.*?)?(Comment:.*?)?(Restrictions:.*?)?(Prerequisites:.*)?\Z', ' '.join(course_body.text.split()))
+        
         info_dict = {
             'days': None,
             'location': None,
@@ -101,6 +118,7 @@ class EnrollmentScraper(object):
             'attributes': None,
             'restrictions': None
         }
+
         for re_match in match.groups():
             if re_match is not None:
                 if re_match.startswith('Days:'):
@@ -117,6 +135,7 @@ class EnrollmentScraper(object):
                         print info_dict['attributes']
                 elif re_match.startswith('Restrictions:'):
                     info_dict['restrictions'] = re_match[14:].strip()
+
         return info_dict
 
     def _get_time_and_days(self, course_dict):
@@ -213,9 +232,16 @@ class EnrollmentScraper(object):
 
         return course_objects
 
+# Setup for filepath parsing (and usage options to come)
+parser = argparse.ArgumentParser(description='Enrollment Scraper scrapes enrollment \
+    information from file supplied')
+parser.add_argument('-f', action='store', dest='filename', default=None,
+                    help='Name of file to scrape')
+
 if __name__ == '__main__':
-    enr = EnrollmentScraper()
-    enr.scrape_html('output.html')
-    print enr.courses
-    #for c in enr.courses:
-    #   print c
+    results = parser.parse_args()     # Parse Arguments
+    enr     = EnrollmentScraper()     # Initialize Scraper
+    enr.scrape_html(results.filename) # Scrape Html for supplied filename (More options to be added)
+
+    # print enr.courses # Uncomment this to print Enrollment data
+    
