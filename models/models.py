@@ -25,15 +25,11 @@ class Student(DeclarativeBase):
 	password      = Column(String)
 	date_created  = Column(DateTime)
 
-	# This is how to establish relationship in the ORM
-	reviews = relationship('Review', order_by='review.id', backref='student')
-
 
 class Review(DeclarativeBase):
 	__tablename__ = "reviews"
 
 	id            = Column(Integer, primary_key=True)
-	course_id     = Column(Integer, ForeignKey('courses.id'))
 	section_id    = Column(Integer, ForeignKey('sections.id'))
 	student_id    = Column(Integer, ForeignKey('students.id'))
 	instructor_id = Column(Integer, ForeignKey('instructors.id'))
@@ -43,7 +39,6 @@ class Review(DeclarativeBase):
 
 	# Establish relationships in class in addition to foreign keys
 	student       = relationship('Student',    order_by='students.id',    backref='review')
-	course        = relationship('Course',     order_by='courses.id',     backref='review')
 	section       = relationship('Section',    order_by='sections.id',    backref='review')
 	instructor    = relationship('Instructor', order_by='instructors.id', backref='review')
 
@@ -59,52 +54,6 @@ class Instructor(DeclarativeBase):
 	id            = Column(Integer, primary_key=True)
 	title         = Column(String)
 	department    = Column(String) # Needs to be a relationship 
-	course_list   = Column(String) # (TODO) create join table and fix this relationship
-
-class Section(DeclarativeBase):
-	__tablename__ = "sections"
-
-	id            = Column(Integer, primary_key=True)
-	crn           = Column(Integer)
-	days          = Column(String,  nullable=True)
-	enrollment    = Column(String,  nullable=True) 
-
-
-class Attribute(DeclarativeBase):
-	__tablename__ = "attributes"
-
-	id            = Column(Integer, primary_key=True)
-	name          = Column(String)
-
-
-class Course(DeclarativeBase):
-	__tablename__ = "courses"
-
-	id            = Column(Integer, primary_key=True)
-	name          = Column(String)
-	number        = Column(String) # Ex. VSB 1000
-
-
-class Restriction(DeclarativeBase):
-	__tablename__ = "restrictions"
-
-	id            = Column(Integer, primary_key=True)
-	text          = Column(String)	
-
-class CourseRestriction(DeclarativeBase):
-	__tablename__ = "course_restrictions"
-
-	id            = Column(Integer, primary_key=True)
-	course_id     = Column(Integer, ForeignKey('courses.id'))	
-	restiction_id = Column(Integer, ForeignKey('restrictions.id'))
-
-
-class CourseAttribute(DeclarativeBase):
-	__tablename__ = "course_attributes"
-
-	id            = Column(Integer, primary_key=True)
-	course_id     = Column(Integer, ForeignKey('courses.id'))	
-	attribute_id  = Column(Integer, ForeignKey('attributes.id'))
 
 class InstructorSection(DeclarativeBase):
 	__tablename__ = "instructor_sections"
@@ -113,6 +62,59 @@ class InstructorSection(DeclarativeBase):
 	course_id     = Column(Integer, ForeignKey('courses.id'))	
 	restiction_id = Column(Integer, ForeignKey('restrictions.id'))
 
+class Section(DeclarativeBase):
+	__tablename__ = "sections"
+
+	id            = Column(Integer, primary_key=True)
+	semester      = Column(String)
+	crn           = Column(Integer)
+	start_time    = Column(String,  nullable=True)
+	end_time      = Column(String,  nullable=True)
+	days          = Column(String,  nullable=True)
+	enrollment    = Column(String,  nullable=True)
+
+class Attribute(DeclarativeBase):
+	__tablename__ = "attributes"
+
+	id            = Column(Integer, primary_key=True)
+	name          = Column(String)
+
+class CourseAttribute(DeclarativeBase):
+	__tablename__ = "course_attributes"
+
+	id            = Column(Integer, primary_key=True)
+	course_id     = Column(Integer, ForeignKey('courses.id'))	
+	attribute_id  = Column(Integer, ForeignKey('attributes.id'))
+
+	course        = relationship('Course',  order_by='courses.id',  backref='course_attributes')
+	section       = relationship('Section', order_by='sections.id', backref='course_attributes')
+
+class Course(DeclarativeBase):
+	__tablename__ = "courses"
+
+	id            = Column(Integer, primary_key=True)
+	name          = Column(String)
+	subject       = Column(String,  nullable=True)
+	subject_level = Column(String,  nullable=True)
+	description   = Column(String,  nullable=True)
+	credits       = Column(Integer, nullable=True)
+	prerequisites = Column(String,  nullable=True)
+
+class CourseRestriction(DeclarativeBase):
+	__tablename__ = "course_restrictions"
+
+	id            = Column(Integer, primary_key=True)
+	course_id     = Column(Integer, ForeignKey('courses.id'))	
+	restiction_id = Column(Integer, ForeignKey('restrictions.id'))
+
+	course        = relationship('Course',  order_by='courses.id',  backref='course_restrictions')
+	restriction   = relationship('Section', order_by='sections.id', backref='course_restrictions')
+
+class Restriction(DeclarativeBase):
+	__tablename__ = "restrictions"
+
+	id            = Column(Integer, primary_key=True)
+	text          = Column(String)	
 
 def db_connect():
 	"""

@@ -19,7 +19,10 @@ def print_course_info(num, course_infos):
     3 Instructors: Emory H. Woodard (P) 
     4 Attributes: Writing Intensive Requirement 
     5 None
-    6 Restrictions: Must be enrolled in one of the following Levels: Undergraduate Must be enrolled in one of the following Majors: Communication May not be enrolled in one of the following Campuses: University Alliance May not be enrolled as the following Classifications: Freshman Sophomore Prerequisites: COM 1200 and ( COM 4001 or COM 4002) or COM 4001 and COM 4002
+    6 Restrictions: Must be enrolled in one of the following Levels: Undergraduate Must be 
+    enrolled in one of the following Majors: Communication May not be enrolled in one of the 
+    following Campuses: University Alliance May not be enrolled as the following Classifications: 
+    Freshman Sophomore Prerequisites: COM 1200 and ( COM 4001 or COM 4002) or COM 4001 and COM 4002
     7 None
     ---------------------------------------------------------------------------
     """
