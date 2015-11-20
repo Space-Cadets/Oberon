@@ -18,7 +18,7 @@ class Student(DeclarativeBase):
 	# SQL Alchemy Models structured like so
 	__tablename__ = "students"
 
-	student_id    = Column(Integer, primary_key=True) # Each table needs one of these
+	id            = Column(Integer, primary_key=True) # Each table needs one of these
 	email         = Column(String)
 	first_name    = Column(String)
 	last_name     = Column(String)
@@ -32,30 +32,31 @@ class Student(DeclarativeBase):
 class Review(DeclarativeBase):
 	__tablename__ = "reviews"
 
-	review_id     = Column(Integer, primary_key=True) 
-	student_id    = Column(Integer, ForeignKey('student.id'))
-	course_id     = Column(Integer, ForeignKey('course.id'))
-	section_id    = Column(Integer, ForeignKey('section.id'))
+	id            = Column(Integer, primary_key=True)
+	course_id     = Column(Integer, ForeignKey('courses.id'))
+	section_id    = Column(Integer, ForeignKey('sections.id'))
+	student_id    = Column(Integer, ForeignKey('students.id'))
+	instructor_id = Column(Integer, ForeignKey('instructors.id'))
 	class_rating  = Column(Integer)
 	inst_rating   = Column(Integer)                    
-	instructor    = Column(String)                    # Maybe Int Foreign key
-	course_name   = Column(String)
 	review_body   = Column(String,  nullable=True)    # Nullable flag means not required
 
-	# Needs relationship for tags, instructor, and course as well
-	student       = relationship('Student', order_by='student.id', backref='review')
-	course        = relationship('Course',  order_by='course.id',  backref='review')
+	# Establish relationships in class in addition to foreign keys
+	student       = relationship('Student',    order_by='students.id',    backref='review')
+	course        = relationship('Course',     order_by='courses.id',     backref='review')
+	section       = relationship('Section',    order_by='sections.id',    backref='review')
+	instructor    = relationship('Instructor', order_by='instructors.id', backref='review')
 
 class Location(DeclarativeBase):
 	__tablename__ = "locations"
 
-	location_id   = Column(Integer, primary_key=True)
-	location_name = Column(String)
+	id            = Column(Integer, primary_key=True)
+	name          = Column(String)
 
 class Instructor(DeclarativeBase):
 	__tablename__ = "instructors"
 
-	instructor_id = Column(Integer, primary_key=True)
+	id            = Column(Integer, primary_key=True)
 	title         = Column(String)
 	department    = Column(String) # Needs to be a relationship 
 	course_list   = Column(String) # (TODO) create join table and fix this relationship
@@ -63,7 +64,8 @@ class Instructor(DeclarativeBase):
 class Section(DeclarativeBase):
 	__tablename__ = "sections"
 
-	section_id    = Column(Integer, primary_key=True)
+	id            = Column(Integer, primary_key=True)
+	crn           = Column(Integer)
 	days          = Column(String,  nullable=True)
 	enrollment    = Column(String,  nullable=True) 
 
@@ -71,31 +73,46 @@ class Section(DeclarativeBase):
 class Attribute(DeclarativeBase):
 	__tablename__ = "attributes"
 
-	attribute_id  = Column(Integer, primary_key=True) 
+	id            = Column(Integer, primary_key=True)
+	name          = Column(String)
 
 
 class Course(DeclarativeBase):
 	__tablename__ = "courses"
 
-	course_id     = Column(Integer, primary_key=True) 
+	id            = Column(Integer, primary_key=True)
+	name          = Column(String)
+	number        = Column(String) # Ex. VSB 1000
+
 
 class Restriction(DeclarativeBase):
 	__tablename__ = "restrictions"
 
-	restiction_id = Column(Integer, primary_key=True)
+	id            = Column(Integer, primary_key=True)
 	text          = Column(String)	
 
-"""
-To Implement in Schema
+class CourseRestriction(DeclarativeBase):
+	__tablename__ = "course_restrictions"
 
-Veto making semester -- just do key or separate DBs with the same schema
-class Semester(DeclarativeBase):
-	__tablename__ = "semester"
+	id            = Column(Integer, primary_key=True)
+	course_id     = Column(Integer, ForeignKey('courses.id'))	
+	restiction_id = Column(Integer, ForeignKey('restrictions.id'))
 
-class Restriction(DeclarativeBase):
-	__tablename__ = "restrictions"
-	
-"""
+
+class CourseAttribute(DeclarativeBase):
+	__tablename__ = "course_attributes"
+
+	id            = Column(Integer, primary_key=True)
+	course_id     = Column(Integer, ForeignKey('courses.id'))	
+	attribute_id  = Column(Integer, ForeignKey('attributes.id'))
+
+class InstructorSection(DeclarativeBase):
+	__tablename__ = "instructor_sections"
+
+	id            = Column(Integer, primary_key=True)
+	course_id     = Column(Integer, ForeignKey('courses.id'))	
+	restiction_id = Column(Integer, ForeignKey('restrictions.id'))
+
 
 def db_connect():
 	"""
@@ -106,3 +123,7 @@ def db_connect():
 
 def create_tables(engine):
 	DeclarativeBase.metadata.create_all(engine)
+
+if __name__ == '__main__':
+	myengine = db_connect()
+	create_tables(myengine)
