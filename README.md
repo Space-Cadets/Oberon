@@ -21,6 +21,8 @@ background / startup processes. Here's a good [link for that](https://www.codefe
 2. Make sure your credentials are in the root of the local repository and then run ```python models.py```
 3. Now try this ```psql VillanovaCourseDB``` and you should be presented with the CLI for postgres
 you can even see your tables and relations by typing ```\d``` in the CLI
+
+
 <img src="psqltables.png" width="400" />
 
 
