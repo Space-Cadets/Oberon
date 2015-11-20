@@ -4,67 +4,21 @@ import re
 # Other Imports
 from bs4 import BeautifulSoup
 
-#------------------ Functions for easier debugging in terminal-----------------------------
+class Enrollment(object):
 
-def print_course_info(num, course_infos):
-    """
-    Print's a formatted output in terminal of the regex matches for a course with its index in course_info
-
-    >>> print_course_info(1869, course_infos)
-
-    1869---------------------------------------------------------------------------
-    0 Days: TR from 04:00 pm to 05:15 pm 
-    1 Location: TBA 
-    2 None
-    3 Instructors: Emory H. Woodard (P) 
-    4 Attributes: Writing Intensive Requirement 
-    5 None
-    6 Restrictions: Must be enrolled in one of the following Levels: Undergraduate Must be enrolled in one of the following Majors: Communication May not be enrolled in one of the following Campuses: University Alliance May not be enrolled as the following Classifications: Freshman Sophomore Prerequisites: COM 1200 and ( COM 4001 or COM 4002) or COM 4001 and COM 4002
-    7 None
-    ---------------------------------------------------------------------------
-    """
-    match = re.match(r'(?:Syllabus Available )?(Days:.*?)(Location:.*?)?(Comment:.*?)?(Instructors:.*?)?(Attributes:.*?)?(Comment:.*?)?(Restrictions:.*?)?(Prerequisites:.*)?\Z', ' '.join(course_infos[num].text.split()))
-    print '{}---------------------------------------------------------------------------'.format(num)
-    for i, regex_match in enumerate(match.groups()):
-        print i, regex_match
-    print '-----------------------------------------------------------------------------'
-
-
-def print_info_between(start, end, course_infos):
-    """
-    Prints output for a range of indices of course_infos
-    """
-    for i in range(start, end):
-        print_course_info(i, course_infos)
-
-def textify(num, course_infos):
-    """
-    Returns a string of all of the text within the info body of a course for easy RegEx parsing
-
-    >>> textify(1400, course_infos)
-
-    u'Days: MW from 01:30 pm to 02:45 pm Location: TBA Instructors: Cheryl J. Carleton (P) Attributes: Core Social Science, Diversity Requirement 2, Writing Enriched Requirement Restrictions: Must be enrolled in one of the following Levels: Undergraduate May not be enrolled in one of the following Campuses: University Alliance Prerequisites: ECO 1001'
-    """
-    return ' '.join(course_infos[num].text.split())
-
-# ------------------- Functions for easier debugging in terminal ----------------------------------
-
-class EnrollmentScraper(object):
-
-    def __init__(self, crn, enrollment):
-        self.crn            = crn
-        self.enrollment     = enrollment
+    def __init__(self, crn, count):
+        self.crn   = crn
+        self.count = count
 
 
     def __str__(self):
-        return "{0} : {1}".format(self.crn, self.enrollment)
+        return "{0} : {1}".format(self.crn, self.count)
 
 
-class NovaCourseScraper(object):
+class EnrollmentScraper(object):
 
     def __init__(self):
         self.courses = []
-        self.length = len(self.courses)
 
     def scrape_html(self, filename):
         """
@@ -93,7 +47,7 @@ class NovaCourseScraper(object):
         an array of course headings(bs4 Tags), and an array of course descriptions(bs4 tags)
         """
         course_headings = course_page.findAll('th') # return an array of all of the course headings
-        course_info = course_page.findAll('td', {'class': 'dddefault'})
+        course_info     = course_page.findAll('td', {'class': 'dddefault'})
 
         return (course_headings, course_info)
 
@@ -175,9 +129,12 @@ class NovaCourseScraper(object):
         if course_dict['days'] is None, returns (None, None, None)
         """
         day_and_time = course_dict['days'].replace('TBA', '').strip()
+
         if bool(day_and_time) == False:
             return (None, None, None)
+
         day_and_time_array = day_and_time.split(' ')
+        
         if len(day_and_time_array) == 1:
             return (day_and_time_array[0], None, None)
         else:
@@ -235,54 +192,30 @@ class NovaCourseScraper(object):
         
         return [attribute.strip() for attribute in attributes if attribute != u' ' and attribute != u'']
 
-    def _get_restrictions(self, course_dict):
-        """
-        Takes in a dictionary of the format from _get_course_body_info and returns an array of strings
-
-        >>> dict = {'restrictions': 'Must be enrolled in one of the following Levels: Graduate Arts and Sciences Must be enrolled in one of the following Majors: History May not be enrolled in one of the following Campuses: University Alliance'}
-
-        >>> _get_restrictions(dict)
-        ['Must be enrolled in one of the following Levels: Graduate Arts and Sciences',
-         'Must be enrolled in one of the following Majors: History',
-         'May not be enrolled in one of the following Campuses: University Alliance']
-        """
-        restrictions = course_dict['restrictions']
-        if restrictions == None:
-            return None
-        try:
-            match = re.match(r'(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?\Z', restrictions)
-        except AttributeError:
-            print "No regex match for string {}".format(restrictions)
-
-        return [ restriction.strip() for restriction in match.groups() if restriction is not None ]
-
-    def _create_course_object(self, course_heading_tag, course_info_body_tag):
+    def _create_course_object(self, course_heading_tag):
         """
         For one entry in the list of courses, create a course object
         """
 
         subject, course_number, section_number, course_name, crn, enrollment = self._get_course_header_info(course_heading_tag)
-        course_dict                = self._get_course_body_info(course_info_body_tag)
-        days, start_time, end_time = self._get_time_and_days(course_dict)
-        location                   = self._get_location(course_dict)
-        instructor                 = self._get_instructors(course_dict)
-        comment                    = self._get_comment(course_dict)
-        attributes                 = self._get_attributes(course_dict)
-        #if attributes is not None:
-            #print attributes
-        restrictions = self._get_restrictions(course_dict)
 
-        return NovaCourse(subject, course_number, section_number, course_name, crn,
-                          enrollment, days, start_time, end_time, location, instructor,
-                          comment, attributes, restrictions)
+        return Enrollment(crn, enrollment)
 
     def _create_course_objects(self, course_page):
+        """
+        Insert the courses header information as dictionaries
+        """
         course_objects = []
         course_headings_tags, course_info_bodies_tags = self._get_course_tags(course_page)
         
-
         for i in range(len(course_headings_tags)):
-            course_objects.append(self._create_course_object(course_headings_tags[i], 
-                course_info_bodies_tags[i]).__dict__)
+            course_objects.append(self._create_course_object(course_headings_tags[i]).__dict__)
 
         return course_objects
+
+if __name__ == '__main__':
+    enr = EnrollmentScraper()
+    enr.scrape_html('output.html')
+    print enr.courses
+    #for c in enr.courses:
+    #   print c

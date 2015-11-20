@@ -296,7 +296,8 @@ class NovaCourseScraper(object):
         
 
         for i in range(len(course_headings_tags)):
-            course_objects.append(self._create_course_object(course_headings_tags[i], course_info_bodies_tags[i]).__dict__)
+            course_objects.append(self._create_course_object(course_headings_tags[i], 
+                course_info_bodies_tags[i]).__dict__)
 
         return course_objects
 
@@ -304,4 +305,4 @@ class NovaCourseScraper(object):
 if __name__ == '__main__':
     spring16 = NovaCourseScraper()
     spring16.scrape_html('output.html')
-    # print spring16.courses
+    print spring16.courses
