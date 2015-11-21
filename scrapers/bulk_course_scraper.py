@@ -73,8 +73,8 @@ class NovaCourse(object):
         self.attributes     = attributes
         self.restrictions   = restrictions
 
-    def __str__(self):
-        return "{0} : {1}".format(self.subject, self.crn)
+    def __repr__(self):
+        return '<NovaCourse(%s: %s-%s-%s)>' % (self.crn, self.subject, self.course_number, self.section_number)
 
 
 class NovaCourseScraper(object):
@@ -300,7 +300,7 @@ class NovaCourseScraper(object):
 
         for i in range(len(course_headings_tags)):
             course_objects.append(self._create_course_object(course_headings_tags[i], 
-                course_info_bodies_tags[i]).__dict__)
+                course_info_bodies_tags[i]))
 
         return course_objects
 
