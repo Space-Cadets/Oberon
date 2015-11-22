@@ -97,4 +97,5 @@ departments = {
     'MAT': 'Mathematics',
     'ME': 'Mechanical Engineering',
     'MSE': 'Mendel Science Experiment',
+    'SCI': ''   # This isn't right. Find out what SCI is
 }
