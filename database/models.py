@@ -13,6 +13,8 @@ class Student(db.Model):
     last_name     = db.Column(db.String())
     password      = db.Column(db.String())
     date_created  = db.Column(db.DateTime)
+    reviews       = db.relationship('Review', backref='student', lazy='dynamic')
+    sections      = db.relationship('Section', backref='students', lazy='dynamic')
 
     def __init__(self, email, first_name, last_name, password):
         self.email = email
@@ -27,17 +29,13 @@ class Student(db.Model):
 class Review(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
-    section_id    = db.Column(db.Integer, db.ForeignKey('sections.id'))
-    student_id    = db.Column(db.Integer, db.ForeignKey('students.id'))
-    instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.id'))
+    section_id    = db.Column(db.Integer, db.ForeignKey('section.id'))
+    instructor_id = db.Column(db.Integer, db.ForeignKey('instructor.id'))
     class_rating  = db.Column(db.Integer)
     inst_rating   = db.Column(db.Integer)
     review_body   = db.Column(db.String(),  nullable=True)    # Nullable flag means not required
 
     # Establish db.relationships in class in addition to foreign keys
-    student       = db.relationship('Student',    order_by='students.id',    backref='review')
-    section       = db.relationship('Section',    order_by='sections.id',    backref='review')
-    instructor    = db.relationship('Instructor', order_by='instructors.id', backref='review')
 
 class Location(db.Model):
 
@@ -49,6 +47,7 @@ class Instructor(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String())
     department    = db.Column(db.String()) # Needs to be a db.relationship 
+    reviews       = db.relationship('Review', backref=db.backref('reviews', lazy='dynamic'))
 
     def __init__(self, name, department):
         self.name = name
@@ -57,11 +56,9 @@ class Instructor(db.Model):
     def __repr__(self):
         return '<Instructor(name=%s, department=%s)' % (self.name, self.department)
 
-class InstructorSection(db.Model):
-
-    id            = db.Column(db.Integer, primary_key=True)
-    course_id     = db.Column(db.Integer, db.ForeignKey('courses.id'))    
-    restiction_id = db.Column(db.Integer, db.ForeignKey('restrictions.id'))
+instructor_sections = db.Table('instructor_sections',
+                               db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id')),
+                               db.Column('section_id', db.Integer, db.ForeignKey('section.id')))
 
 class Section(db.Model):
 
@@ -72,20 +69,16 @@ class Section(db.Model):
     end_time      = db.Column(db.String(),  nullable=True)
     days          = db.Column(db.String(),  nullable=True)
     enrollment    = db.Column(db.String(),  nullable=True)
+    reviews       = db.relationship('Review', backref=db.backref('reviews', lazy='dynamic'))
 
 class Attribute(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String())
 
-class CourseAttribute(db.Model):
-
-    id            = db.Column(db.Integer, primary_key=True)
-    course_id     = db.Column(db.Integer, db.ForeignKey('courses.id'))	
-    attribute_id  = db.Column(db.Integer, db.ForeignKey('attributes.id'))
-
-    course        = db.relationship('Course',  order_by='courses.id',  backref='course_attributes')
-    section       = db.relationship('Section', order_by='sections.id', backref='course_attributes')
+course_attributes = db.Table('course_attributes',
+                             db.Column('course_id', db.Integer, db.ForeignKey('course.id')),
+                             db.Column('attribute_id', db.Integer, db.ForeignKey('attribute.id')))
 
 class Course(db.Model):
 
@@ -96,17 +89,17 @@ class Course(db.Model):
     description   = db.Column(db.String(),  nullable=True)
     credits       = db.Column(db.Integer, nullable=True)
     prerequisites = db.Column(db.String(),  nullable=True)
+    restrictions  = db.relationship('Restriction', backref=db.backref('courses', lazy='dynamic'))
 
-class CourseRestriction(db.Model):
-
-    id            = db.Column(db.Integer, primary_key=True)
-    course_id     = db.Column(db.Integer, db.ForeignKey('courses.id'))
-    restiction_id = db.Column(db.Integer, db.ForeignKey('restrictions.id'))
-
-    course        = db.relationship('Course',  order_by='courses.id',  backref='course_restrictions')
-    restriction   = db.relationship('Section', order_by='sections.id', backref='course_restrictions')
+course_restrictions = db.Table('course_restrictions',
+                               db.Column('course_id', db.Integer, db.ForeignKey('course.id')),
+                               db.Column('restriction_id', db.Integer, db.ForeignKey('restriction.id')))
 
 class Restriction(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
     text          = db.Column(db.String())
+
+class Department(db.Model):
+    code = db.Column(db.String(), primary_key=True)
+    name = db.Column(db.String())
