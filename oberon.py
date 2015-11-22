@@ -7,6 +7,5 @@ app = Flask(__name__)
 app.config.from_object(config.Config)
 db.init_app(app)
 
-
 if __name__ == "__main__":
     db.create_all()

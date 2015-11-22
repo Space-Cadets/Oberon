@@ -18,7 +18,7 @@ background / startup processes. Here's a good [link for that](https://www.codefe
 ### How to Initialize your DB
 
 1. ```createdb VillanovaCourseDB```
-2. Make sure your credentials are in the root of the local repository and then run ```python models.py```
+2. Make sure your config is in the root of the local repository and then run ```python oberon.py```
 3. Now try this ```psql VillanovaCourseDB``` and you should be presented with the CLI for postgres
 you can even see your tables and relations by typing ```\d``` in the CLI
 

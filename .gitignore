@@ -6,3 +6,4 @@ venv
 private.py
 *.html
 *.pyc
+utils
