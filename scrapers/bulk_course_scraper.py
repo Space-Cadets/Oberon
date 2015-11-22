@@ -265,7 +265,7 @@ class NovaCourseScraper(object):
         """
         restrictions = course_dict['restrictions']
         if restrictions == None:
-            return None
+            return []
         try:
             match = re.match(r'(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?(Must.*?)?(May.*?)?\Z', restrictions)
         except AttributeError:

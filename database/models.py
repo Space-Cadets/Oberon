@@ -90,10 +90,22 @@ class Section(db.Model):
     reviews       = db.relationship('Review', backref=db.backref('section'))
 
 
+    def __init__(self, semester, crn, start_time, end_time, days, enrollment):
+        self.semester = semester
+        self.crn = crn
+        self.start_time = start_time
+        self.end_time = end_time
+        self.days = days
+        self.enrollment = enrollment
+
+
 class Attribute(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String())
+
+    def __init__(self, name):
+        self.name = name
 
 course_attributes = db.Table('course_attributes',
                              db.Column('course_id', db.Integer, db.ForeignKey('course.id')),
@@ -117,9 +129,17 @@ class Course(db.Model):
                                     #primaryjoin=("course_restrictions.c.course_id==id"),
                                     backref=db.backref('courses', lazy='dynamic'))
 
+    def __init__(self, name, subject, subject_level):
+            self.name = name
+            self.subject = subject
+            self.subject_level = subject_level
+
 class Restriction(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     text          = db.Column(db.String())
+
+    def __init__(self, text):
+        self.text = text
     
 class Department(db.Model):
     """
