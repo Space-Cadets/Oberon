@@ -1,5 +1,5 @@
 from oberon import db
-from oberon import Instructor
+from mappings import departments
 
 class DatabaseBuilder(object):
     """
@@ -11,10 +11,11 @@ class DatabaseBuilder(object):
         """
         Courses is a list of course objects
         """
-        self.courses = courses[1000:1010]
-        for course in self.courses:
-            print course
-        self._insert_all_instructors()
+        self.courses = courses
+        #for course in self.courses:
+            #print course
+        #self._insert_all_instructors()
+        self._insert_departments()
 
     def build(self):
         pass
@@ -26,3 +27,11 @@ class DatabaseBuilder(object):
                 instructor_record = Instructor(instructor, course.subject)
                 db.session.add(instructor_record)
                 db.session.commit()
+
+
+    def _insert_departments(self):
+        for course in self.courses:
+            try:
+                test = departments[course.subject]
+            except KeyError as e:
+                print course.__dict__

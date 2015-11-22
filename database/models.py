@@ -6,7 +6,6 @@ db = SQLAlchemy()
 
 class Student(db.Model):
     # SQL Alchemy Models structured like so
-
     id            = db.Column(db.Integer, primary_key=True) # Each table needs one of these
     email         = db.Column(db.String())
     first_name    = db.Column(db.String())
@@ -48,6 +47,7 @@ class Instructor(db.Model):
     name          = db.Column(db.String())
     department    = db.Column(db.String()) # Needs to be a db.relationship 
     reviews       = db.relationship('Review', backref=db.backref('reviews', lazy='dynamic'))
+    departments   = db.relationship('Department', backref=db.backref('instructors', lazy='dynamic'))
 
     def __init__(self, name, department):
         self.name = name
@@ -96,10 +96,17 @@ course_restrictions = db.Table('course_restrictions',
                                db.Column('restriction_id', db.Integer, db.ForeignKey('restriction.id')))
 
 class Restriction(db.Model):
-
     id            = db.Column(db.Integer, primary_key=True)
     text          = db.Column(db.String())
 
 class Department(db.Model):
+    """
+    Example code: 'MAT'
+    Example name: 'Mathematics'
+    """
     code = db.Column(db.String(), primary_key=True)
     name = db.Column(db.String())
+
+    def __init__(self, code, name):
+            self.code = code
+            self.name = name
