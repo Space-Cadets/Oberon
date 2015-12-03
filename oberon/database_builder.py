@@ -7,7 +7,6 @@ class DatabaseBuilder(object):
     Builds the initial database from a list of courses
     """
 
-
     def __init__(self, courses):
         """
         Courses is a list of course objects

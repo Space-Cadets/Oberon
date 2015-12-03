@@ -52,6 +52,24 @@ def textify(num, course_infos):
 
 # ------------------- Functions for easier debugging in terminal ----------------------------------
 
+
+
+class NoCoursesError(Exception):
+    def __init__(self, value):
+        self.value = "A source for scraping must be specified first -- Either by scrape_html or scrape_request"
+    def __str__(self):
+        return repr(self.value)
+
+
+class Enrollment(object):
+
+    def __init__(self, crn, count):
+        self.crn   = crn
+        self.count = count
+
+    def __repr__(self):
+        return "{0} : {1}".format(self.crn, self.count)
+
 class NovaCourse(object):
 
     def __init__(self, subject, course_number, section_number, course_name, crn,
@@ -304,8 +322,19 @@ class NovaCourseScraper(object):
 
         return course_objects
 
+    def _get_enrollment_numbers(self):
+        """
+        Returns a list of Enrollment objects
+        Each contains a CRN and an enrollment string
+        instance of scraper must scrape a list of courses first
+        """
+        if not self.courses:
+            raise NoCoursesError
+        else:
+            return [Enrollment(course.crn, course.enrollment) for course in self.courses]
 
 if __name__ == '__main__':
     spring16 = NovaCourseScraper()
     spring16.scrape_html('output.html')
-    print spring16.courses
+    print len(spring16.courses)
+    print spring16._get_enrollment_numbers()

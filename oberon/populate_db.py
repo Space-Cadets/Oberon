@@ -1,5 +1,5 @@
 from scrapers.bulk_course_scraper import NovaCourseScraper
-from database_builder import DatabaseBuilder
+from database.database_builder import DatabaseBuilder
 
 if __name__ == '__main__':
     spring16 = NovaCourseScraper()
