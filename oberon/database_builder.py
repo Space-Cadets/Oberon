@@ -23,6 +23,7 @@ class DatabaseBuilder(object):
     def _add_course_data(self, course):
         department = self._get_or_create_department(course)
         instructors = self._get_or_create_instructors(course)
+        attributes = self._get_or_create_attributes(course)
 
 
     def _get_or_create_department(self, course):
@@ -54,7 +55,14 @@ class DatabaseBuilder(object):
     def _get_or_create_attributes(self, course):
         attribute_list = []
         for attribute in course.attributes:
-            print attribute
+            attribute_record = Attribute.query.filter_by(name=attribute).first()
+            if not attribute_record:
+                attribute_record = Attribute(attribute)
+                print "Adding Attribute: \"%s\"" % attribute
+                db.session.add(attribute_record)
+                db.session.commit()
+            attribute_list.append(attribute_record)
+        return attribute_list
 
     def _insert_all_attributes(self):
         for course in self.courses:

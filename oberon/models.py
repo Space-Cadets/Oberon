@@ -100,6 +100,9 @@ class Attribute(db.Model):
     def __init__(self, name):
         self.name = name
 
+    def __repr__(self):
+        return '<Attribute(name=%s)>' % self.name
+
 course_attributes = db.Table('course_attributes',
                              db.Column('course_id', db.Integer, db.ForeignKey('course.id')),
                              db.Column('attribute_id', db.Integer, db.ForeignKey('attribute.id')))
@@ -113,11 +116,12 @@ class Course(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String())
     subject       = db.Column(db.String(),  nullable=True)
-    department    = db.relationship('Department', backref=db.backref('courses'))
+    department_id = db.Column(db.String(), db.ForeignKey('department.code'))
     subject_level = db.Column(db.String(),  nullable=True)
     description   = db.Column(db.String(),  nullable=True)
     credits       = db.Column(db.Integer, nullable=True)
     prerequisites = db.Column(db.String(),  nullable=True)
+    department    = db.relationship('Department', backref=db.backref('courses'))
     attributes    = db.relationship('Attribute',
                                     secondary=course_attributes,
                                     backref=db.backref('courses', lazy='dynamic'))
