@@ -158,6 +158,7 @@ class NovaCourseScraper(object):
         course_name    = match.group(5).strip()
         crn            = match.group(7).strip()
         enrollment     = match.group(9).strip()
+        print subject + " " + course_number
 
         return (subject, course_number, section_number, course_name, crn, enrollment)
 
@@ -210,7 +211,7 @@ class NovaCourseScraper(object):
         if course_dict['days'] is None, returns (None, None, None)
         """
         day_and_time = course_dict['days'].replace('TBA', '').strip()
-        if bool(day_and_time) == False:
+        if not day_and_time == False:
             return (None, None, None)
         day_and_time_array = day_and_time.split(' ')
         if len(day_and_time_array) == 1:
@@ -335,6 +336,6 @@ class NovaCourseScraper(object):
 
 if __name__ == '__main__':
     spring16 = NovaCourseScraper()
-    spring16.scrape_html('output.html')
+    spring16.scrape_html('output2.html')
     print len(spring16.courses)
-    print spring16._get_enrollment_numbers()
+    #print spring16._get_enrollment_numbers()

@@ -1,6 +1,6 @@
 from oberon import create_app
 from mappings import departments
-from database.models import db, Department, Instructor, Attribute, Section, Restriction, Course
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course
 
 class DatabaseBuilder(object):
     """
@@ -30,7 +30,8 @@ class DatabaseBuilder(object):
                 with self.app.app_context():
                     if not Instructor.query.filter_by(name=instructor).first():
                         db.session.add(instructor_record)
-                        print "Adding \"%s\" to instructors" % instructor
+                        #print "Adding \"%s\" to instructors" % instructor
+                        print "Adding Instructor: \"%s\"" % instructor
                         db.session.commit()
 
     def _insert_all_departments(self):
@@ -39,7 +40,8 @@ class DatabaseBuilder(object):
             with self.app.app_context():
                 if not Department.query.get(course.subject):
                     db.session.add(department_record)
-                    print "Adding \"%s\" to Departments" % course.subject
+                    #print "Adding \"%s\" to Departments" % course.subject
+                    print "Adding Department: \"%s\"" % course.subject
                     db.session.commit()
 
     def _insert_all_attributes(self):
@@ -49,7 +51,8 @@ class DatabaseBuilder(object):
                 with self.app.app_context():
                     if not Attribute.query.filter_by(name=attribute).first():
                         db.session.add(attribute_record)
-                        print "Adding \"%s\" to attributes" % attribute
+                        #print "Adding \"%s\" to attributes" % attribute
+                        print "Adding Attribute: \"%s\"" % attribute
                         db.session.commit()
 
     def _insert_all_sections(self):
@@ -59,7 +62,7 @@ class DatabaseBuilder(object):
             with self.app.app_context():
                 if not Section.query.filter_by(crn=course.crn).first():
                     db.session.add(section_record)
-                    print "Adding \"%s-%s-%s\" to sections" % (course.subject, course.course_number, course.section_number)
+                    print "Adding Section: \"%s-%s-%s\"" % (course.subject, course.course_number, course.section_number)
                     db.session.commit()
 
     def _insert_all_restrictions(self):
@@ -69,7 +72,8 @@ class DatabaseBuilder(object):
                 with self.app.app_context():
                     if not Restriction.query.filter_by(text=restriction).first():
                         db.session.add(restriction_record)
-                        print "Adding \"%s\" to restrictions" % restriction
+                        #print "Adding \"%s\" to restrictions" % restriction
+                        print "Adding Restriction: \"%s\"" % restriction
                         db.session.commit()
 
 
@@ -79,5 +83,6 @@ class DatabaseBuilder(object):
             with self.app.app_context():
                 if not Course.query.filter_by(subject=course.subject).filter_by(subject_level=course.course_number).first():
                     db.session.add(course_record)
-                    print "Adding \"%s-%s\" to Courses" % (course.subject, course.course_number)
+                    #print "Adding \"%s-%s\" to Courses" % (course.subject, course.course_number)
+                    print "Adding Course: \"%s-%s\"" % (course.subject, course.course_number)
                     db.session.commit()
