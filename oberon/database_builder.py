@@ -13,36 +13,48 @@ class DatabaseBuilder(object):
         """
         self.courses = courses
         self.app = create_app()
+        self.app.app_context().push()
         self.build()
 
     def build(self):
-        self._insert_all_instructors()
-        self._insert_all_departments()
-        self._insert_all_attributes()
-        self._insert_all_sections()
-        self._insert_all_restrictions()
-        self._insert_all_courses()
-
-    def _insert_all_instructors(self):
         for course in self.courses:
-            for instructor in course.instructor:
-                instructor_record = Instructor(instructor)
-                with self.app.app_context():
-                    if not Instructor.query.filter_by(name=instructor).first():
-                        db.session.add(instructor_record)
-                        #print "Adding \"%s\" to instructors" % instructor
-                        print "Adding Instructor: \"%s\"" % instructor
-                        db.session.commit()
+            self._add_course_data(course)
 
-    def _insert_all_departments(self):
-        for course in self.courses:
+    def _add_course_data(self, course):
+        department = self._get_or_create_department(course)
+        instructors = self._get_or_create_instructors(course)
+
+
+    def _get_or_create_department(self, course):
+        department_record = Department.query.get(course.subject)
+        if not department_record:
             department_record = Department(course.subject, departments[course.subject])
-            with self.app.app_context():
-                if not Department.query.get(course.subject):
-                    db.session.add(department_record)
-                    #print "Adding \"%s\" to Departments" % course.subject
-                    print "Adding Department: \"%s\"" % course.subject
-                    db.session.commit()
+            db.session.add(department_record)
+            print "Adding Department: \"%s\"" % course.subject
+            db.session.commit()
+        return department_record
+
+    def _get_or_create_instructors(self, course):
+        """
+        Adds an instructor to the database or returns the record for that instructor
+        Also adds department to an instructor record
+        """
+        instructor_list = []
+        for instructor in course.instructor:
+            instructor_record = Instructor.query.filter_by(name=instructor).first()
+            if not instructor_record:
+                instructor_record = Instructor(instructor)
+                print "Adding Instructor: \"%s\"" % instructor
+            instructor_record.departments.append(self._get_or_create_department(course))
+            db.session.add(instructor_record)
+            db.session.commit()
+            instructor_list.append(instructor_record)
+        return instructor_list
+
+    def _get_or_create_attributes(self, course):
+        attribute_list = []
+        for attribute in course.attributes:
+            print attribute
 
     def _insert_all_attributes(self):
         for course in self.courses:

@@ -44,13 +44,6 @@ class Review(db.Model):
 
     # Establish db.relationships in class in addition to foreign keys
 
-class Location(db.Model):
-
-    id            = db.Column(db.Integer, primary_key=True)
-    name          = db.Column(db.String())
-
-
-
 instructor_departments = db.Table('instructor_departments',
                                   db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id')),
                                   db.Column('department_code', db.String(), db.ForeignKey('department.code')))
@@ -60,7 +53,6 @@ class Instructor(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String())
-    department    = db.Column(db.String()) # Needs to be a db.relationship 
     reviews       = db.relationship('Review', backref=db.backref('instructors'))
     departments   = db.relationship('Department',
                                     secondary=instructor_departments,
@@ -72,7 +64,7 @@ class Instructor(db.Model):
 
     def __repr__(self):
         #return '<Instructor(name=%s, department=%s)' % (self.name, self.department)
-        return '<Instructor(name=%s)' % self.name
+        return '<Instructor(name=%s, departments=%s)' % (self.name, str([department.code for department in self.departments]))
 
 instructor_sections = db.Table('instructor_sections',
                                db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id')),
@@ -83,6 +75,7 @@ class Section(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     semester      = db.Column(db.String())
     crn           = db.Column(db.Integer)
+    location      = db.Column(db.String(), nullable=True)
     start_time    = db.Column(db.String(),  nullable=True)
     end_time      = db.Column(db.String(),  nullable=True)
     days          = db.Column(db.String(),  nullable=True)
@@ -120,10 +113,14 @@ class Course(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     name          = db.Column(db.String())
     subject       = db.Column(db.String(),  nullable=True)
+    department    = db.relationship('Department', backref=db.backref('courses'))
     subject_level = db.Column(db.String(),  nullable=True)
     description   = db.Column(db.String(),  nullable=True)
     credits       = db.Column(db.Integer, nullable=True)
     prerequisites = db.Column(db.String(),  nullable=True)
+    attributes    = db.relationship('Attribute',
+                                    secondary=course_attributes,
+                                    backref=db.backref('courses', lazy='dynamic'))
     restrictions  = db.relationship('Restriction',
                                     secondary=course_restrictions,
                                     #primaryjoin=("course_restrictions.c.course_id==id"),
@@ -153,3 +150,6 @@ class Department(db.Model):
     def __init__(self, code, name):
             self.code = code
             self.name = name
+
+    def __repr__(self):
+        return "<Department(code=%s, name=%s)>" % (self.code, self.name)
