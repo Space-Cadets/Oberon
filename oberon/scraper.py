@@ -158,7 +158,7 @@ class NovaCourseScraper(object):
         course_name    = match.group(5).strip()
         crn            = match.group(7).strip()
         enrollment     = match.group(9).strip()
-        print subject + " " + course_number
+        #print subject + " " + course_number
 
         return (subject, course_number, section_number, course_name, crn, enrollment)
 

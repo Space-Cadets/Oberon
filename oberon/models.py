@@ -80,7 +80,15 @@ class Section(db.Model):
     end_time      = db.Column(db.String(),  nullable=True)
     days          = db.Column(db.String(),  nullable=True)
     enrollment    = db.Column(db.String(),  nullable=True)
+    course_id     = db.Column(db.Integer, db.ForeignKey('course.id'))
+
+    course        = db.relationship('Course', backref=db.backref('sections'))
     reviews       = db.relationship('Review', backref=db.backref('section'))
+    instructors   = db.relationship('Instructor',
+                                    secondary=instructor_sections,
+                                    backref=db.backref('sections', lazy='dynamic'))
+
+
 
 
     def __init__(self, semester, crn, start_time, end_time, days, enrollment):
@@ -90,6 +98,9 @@ class Section(db.Model):
         self.end_time = end_time
         self.days = days
         self.enrollment = enrollment
+
+    def __repr__(self):
+        return '<Section(crn=%s)>' % self.crn
 
 
 class Attribute(db.Model):
@@ -134,6 +145,10 @@ class Course(db.Model):
             self.name = name
             self.subject = subject
             self.subject_level = subject_level
+            #self.description = description
+
+    def __repr__(self):
+        return '<Course(name=%s, subject=%s, subject_level=%s)>' % (self.name, self.subject, self.subject_level)
 
 class Restriction(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
@@ -141,6 +156,9 @@ class Restriction(db.Model):
 
     def __init__(self, text):
         self.text = text
+
+    def __repr__(self):
+        return '<Restriction(text=%s)>' % self.text
     
 class Department(db.Model):
     """
