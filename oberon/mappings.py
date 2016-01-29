@@ -99,7 +99,7 @@ departments = {
     'MSE': 'Mendel Science Experiment',
     'SCI': '',   # This isn't right. Find out what SCI is
     'SCSC': '',
-    'BA': '',
-    'AIS': ''
+    'BA': 'Business Administration',
+    'AIS': 'Arab and Islamic Studies'
 
 }

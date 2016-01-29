@@ -18,6 +18,7 @@ class DatabaseBuilder(object):
         self.instructors = {}
         self.departments = {}
         self.course_names = {}
+        self.crns = {}
 
         self.num_courses = 0
         self.num_new_courses = 0
