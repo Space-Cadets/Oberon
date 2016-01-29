@@ -34,20 +34,23 @@ class Student(db.Model):
 class Review(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
-    student         = db.Column(db.String(), db.ForeignKey('student.email'))
     class_rating    = db.Column(db.Integer)
     inst_rating     = db.Column(db.Integer)
     review_body     = db.Column(db.String(),  nullable=True)    # Nullable flag means not required
     date_created    = db.Column(db.DateTime)
+
+    student_email   = db.Column(db.String(), db.ForeignKey('student.email'))
+    student         = db.relationship('Student', backref=db.backref('reviews'))
     instructor_name = db.Column(db.String(), db.ForeignKey('instructor.name'))
     section_crn     = db.Column(db.Integer, db.ForeignKey('section.crn'))
-
     instructor      = db.relationship('Instructor', backref=db.backref('reviews'))
     section         = db.relationship('Section', backref=db.backref('reviews'))
 
-    def __init__(self, student):
-        pass
-
+    def __init__(self, student, class_rating, inst_rating, review_body):
+        #self.student = student
+        self.class_rating = class_rating
+        self.inst_rating = inst_rating
+        self.review_body = review_body
 
     # Establish db.relationships in class in addition to foreign keys
 

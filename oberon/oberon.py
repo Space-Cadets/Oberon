@@ -3,7 +3,7 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.exceptions import HTTPException
 import config
 from flask.ext.sqlalchemy import SQLAlchemy
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
 from fuzzywuzzy import fuzz, process
 
 def create_app():
@@ -74,7 +74,6 @@ def get_instructor(instructor_name):
         'name': instructor.name,
     }
     return jsonify(instructor_data)
-    
 
 @app.route('/courses/<course_name>', methods=['GET'])
 def get_course(course_name):
@@ -85,6 +84,12 @@ def get_course(course_name):
         'subject': course.subject
     }
     return jsonify(course_data)
+
+@app.route('/reviews/<student_email>', methods=['GET'])
+def get_student_reviews(student_email):
+    student = Student.query.filter_by(email=student_email).first()
+    reviews = [{'text': review.review_body} for review in student.reviews]
+    return jsonify({'data': reviews})
 
 #@app.route('/reviews/<search>/')
 #/reviews/levitin?type=teacher
