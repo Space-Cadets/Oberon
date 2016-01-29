@@ -85,18 +85,18 @@ def get_course(course_name):
     }
     return jsonify(course_data)
 
-@app.route('/reviews/<student_email>', methods=['GET'])
+@app.route('/reviews/student/<student_email>', methods=['GET'])
 def get_student_reviews(student_email):
     student = Student.query.filter_by(email=student_email).first()
     reviews = [{'text': review.review_body} for review in student.reviews]
     return jsonify({'data': reviews})
 
-#@app.route('/reviews/<search>/')
-#/reviews/levitin?type=teacher
-#def get_reviews():
-    #pass
-
-#@app.route('/student')
+@app.route('/reviews/instructor/<instructor>', methods=['GET'])
+def get_instructor_reviews(instructor):
+    print instructor
+    instructor = Instructor.query.filter_by(name=instructor).first()
+    reviews = [{'text': review.review_body} for review in instructor.reviews]
+    return jsonify({'data': reviews})
 
 if __name__ == "__main__":
     app.run(debug=True)
