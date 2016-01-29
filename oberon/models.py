@@ -5,19 +5,18 @@ from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 student_sections = db.Table('student_sections',
-                            db.Column('student_id', db.Integer, db.ForeignKey('student.id')),
-                            db.Column('section_id', db.Integer, db.ForeignKey('section.id'))
+                            db.Column('student', db.String(), db.ForeignKey('student.email')),
+                            db.Column('section_crn', db.Integer, db.ForeignKey('section.crn'))
                             )
 
 class Student(db.Model):
     # SQL Alchemy Models structured like so
-    id            = db.Column(db.Integer, primary_key=True) # Each table needs one of these
-    email         = db.Column(db.String(), unique=True)
+    email         = db.Column(db.String(), primary_key=True)
     first_name    = db.Column(db.String())
     last_name     = db.Column(db.String())
     password      = db.Column(db.String())
     date_created  = db.Column(db.DateTime)
-    reviews       = db.relationship('Review', backref='student', lazy='dynamic')
+    #reviews       = db.relationship('Review', backref='student', lazy='dynamic')
     sections      = db.relationship('Section',
                                     secondary=student_sections,
                                     backref='students', lazy='dynamic')
@@ -34,26 +33,33 @@ class Student(db.Model):
 
 class Review(db.Model):
 
-    id            = db.Column(db.Integer, primary_key=True)
-    student_id    = db.Column(db.Integer, db.ForeignKey('student.id'))
-    section_id    = db.Column(db.Integer, db.ForeignKey('section.id'))
-    instructor_id = db.Column(db.Integer, db.ForeignKey('instructor.id'))
-    class_rating  = db.Column(db.Integer)
-    inst_rating   = db.Column(db.Integer)
-    review_body   = db.Column(db.String(),  nullable=True)    # Nullable flag means not required
+    id              = db.Column(db.Integer, primary_key=True)
+    student         = db.Column(db.String(), db.ForeignKey('student.email'))
+    class_rating    = db.Column(db.Integer)
+    inst_rating     = db.Column(db.Integer)
+    review_body     = db.Column(db.String(),  nullable=True)    # Nullable flag means not required
+    date_created    = db.Column(db.DateTime)
+    instructor_name = db.Column(db.String(), db.ForeignKey('instructor.name'))
+    section_crn     = db.Column(db.Integer, db.ForeignKey('section.crn'))
+
+    instructor      = db.relationship('Instructor', backref=db.backref('reviews'))
+    section         = db.relationship('Section', backref=db.backref('reviews'))
+
+    def __init__(self, student):
+        pass
+
 
     # Establish db.relationships in class in addition to foreign keys
 
 instructor_departments = db.Table('instructor_departments',
-                                  db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id')),
+                                  db.Column('instructor', db.String(), db.ForeignKey('instructor.name')),
                                   db.Column('department_code', db.String(), db.ForeignKey('department.code')))
 
 
 class Instructor(db.Model):
 
-    id            = db.Column(db.Integer, primary_key=True)
-    name          = db.Column(db.String())
-    reviews       = db.relationship('Review', backref=db.backref('instructors'))
+    name          = db.Column(db.String(), primary_key=True)
+    #reviews       = db.relationship('Review', backref=db.backref('instructors'))
     departments   = db.relationship('Department',
                                     secondary=instructor_departments,
                                     backref=db.backref('instructors', lazy='dynamic'))
@@ -67,14 +73,13 @@ class Instructor(db.Model):
         return '<Instructor(name=%s, departments=%s)' % (self.name, str([department.code for department in self.departments]))
 
 instructor_sections = db.Table('instructor_sections',
-                               db.Column('instructor_id', db.Integer, db.ForeignKey('instructor.id')),
-                               db.Column('section_id', db.Integer, db.ForeignKey('section.id')))
+                               db.Column('instructor', db.String(), db.ForeignKey('instructor.name')),
+                               db.Column('section_crn', db.Integer, db.ForeignKey('section.crn')))
 
 class Section(db.Model):
 
-    id            = db.Column(db.Integer, primary_key=True)
+    crn           = db.Column(db.Integer, primary_key = True)
     semester      = db.Column(db.String())
-    crn           = db.Column(db.Integer)
     location      = db.Column(db.String(), nullable=True)
     start_time    = db.Column(db.String(),  nullable=True)
     end_time      = db.Column(db.String(),  nullable=True)
@@ -82,8 +87,9 @@ class Section(db.Model):
     enrollment    = db.Column(db.String(),  nullable=True)
     course_id     = db.Column(db.Integer, db.ForeignKey('course.id'))
 
+    
     course        = db.relationship('Course', backref=db.backref('sections'))
-    reviews       = db.relationship('Review', backref=db.backref('section'))
+    #reviews       = db.relationship('Review', backref=db.backref('section'))
     instructors   = db.relationship('Instructor',
                                     secondary=instructor_sections,
                                     backref=db.backref('sections', lazy='dynamic'))

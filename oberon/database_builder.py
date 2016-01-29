@@ -1,6 +1,7 @@
 from oberon import create_app
 from mappings import departments
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student
+from test_users import test_users
 
 class DatabaseBuilder(object):
     """
@@ -33,6 +34,7 @@ class DatabaseBuilder(object):
         for course in self.courses:
             self._add_course_data(course)
         self.print_status()
+        self.add_users()
 
     def print_status(self):
         print "Summary for Courses parsed"
@@ -145,3 +147,17 @@ class DatabaseBuilder(object):
         db.session.add(course_record)
         db.session.commit()
         return course_record
+
+    def add_users(self):
+        print "Adding users"
+        for user in test_users:
+            student_record = Student.query.filter_by(email=user['email']).first()
+            if not student_record:
+                student_record = Student(user['email'], user['first_name'], user['last_name'], user['password'])
+                print "Added student: %s" % user['email']
+                db.session.add(student_record)
+                db.session.commit()
+            else:
+                print "Student %s already exists" % user['email']
+
+
