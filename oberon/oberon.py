@@ -67,11 +67,14 @@ def signup():
     # input validation here
     signup_request = request.get_json()
     if signup_request['email'] != signup_request['confirmEmail']:
-        return jsonify({'status': 'Emails do not match'})
+        return jsonify({'success': False,
+                        'description': 'Emails do not match'})
     elif Student.query.filter_by(email=signup_request['email']).scalar():  #student already has an account
-        return jsonify({'status': 'User already exists'})
+        return jsonify({'success': False,
+                        'description': 'User already exists'})
     elif not validate_email(signup_request['email']) or signup_request['email'][-13:] != 'villanova.edu':
-        return jsonify({'status': 'Please enter a valid villanova.edu email address'})
+        return jsonify({'success': False,
+                        'description': 'Please enter a valid villanova.edu email address'})
     else:
         # Send the user an email to activate their account
         # For now, just creating the user
@@ -81,7 +84,8 @@ def signup():
                                  signup_request['password'])
         db.session.add(student_record)
         db.session.commit()
-        return jsonify({'status': 'SUCCESS: Check your email'})
+        return jsonify({'success': True,
+                        'description': 'Signup was a success. Please check your email'})
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -101,7 +105,6 @@ def get_courses(search_string):
                     'attributes': courses[course[0]],
                     'match': course[1]} for course in process.extract(search_string, course_names, limit=100) if course[1] > 60]
     return jsonify({'courses': course_data})
-
 
 @app.route('/instructors/f/<search_string>', methods=['GET'])
 def get_instructors(search_string):
@@ -125,6 +128,23 @@ def get_course(course_name):
         'subject': course.subject
     }
     return jsonify(course_data)
+
+@app.route('/reviews', methods=['POST'])
+def post_review():
+    review_request = request.get_json()
+    review_record = Review(review_request['class_rating'], review_request['inst_rating'], review_request['review_body'])
+    student_record = Student.query.filter_by(email=review_request['student']).first()
+    section_record = Section.query.filter_by(crn=review_request['section']).first()
+    instructor_record = Instructor.query.filter_by(name=review_request['instructor']).first()
+    student_record.reviews.append(review_record)
+    section_record.reviews.append(review_record)
+    instructor_record.reviews.append(review_record)
+    db.session.add(review_record)
+    db.session.add(student_record)
+    db.session.add(section_record)
+    db.session.add(instructor_record)
+    return jsonify({'success': True,
+                    'description': 'Review successfully added to the database'})
 
 @app.route('/reviews/student/<student_email>', methods=['GET'])
 def get_student_reviews(student_email):

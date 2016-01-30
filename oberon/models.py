@@ -46,7 +46,7 @@ class Review(db.Model):
     instructor      = db.relationship('Instructor', backref=db.backref('reviews'))
     section         = db.relationship('Section', backref=db.backref('reviews'))
 
-    def __init__(self, student, class_rating, inst_rating, review_body):
+    def __init__(self, class_rating, inst_rating, review_body):
         #self.student = student
         self.class_rating = class_rating
         self.inst_rating = inst_rating
