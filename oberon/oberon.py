@@ -5,6 +5,13 @@ import config
 from flask.ext.sqlalchemy import SQLAlchemy
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
 from fuzzywuzzy import fuzz, process
+import itertools
+
+class CourseNameException(Exception):
+    def __init(self, length):
+        self.length = length
+    def __str__(self):
+        return repr(self.length)
 
 def create_app():
     """
@@ -96,6 +103,14 @@ def get_instructor_reviews(instructor):
     print instructor
     instructor = Instructor.query.filter_by(name=instructor).first()
     reviews = [{'text': review.review_body} for review in instructor.reviews]
+    return jsonify({'data': reviews})
+
+@app.route('/reviews/course/<course>', methods=['GET'])
+def get_course_reviews(course):
+    print course
+    course = Course.query.filter_by(name=course).first()#.sections
+    review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
+    reviews = [{'text': review.review_body} for review in review_objects]
     return jsonify({'data': reviews})
 
 if __name__ == "__main__":
