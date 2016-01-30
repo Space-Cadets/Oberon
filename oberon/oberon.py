@@ -1,10 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from werkzeug.exceptions import default_exceptions
 from werkzeug.exceptions import HTTPException
 import config
 from flask.ext.sqlalchemy import SQLAlchemy
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
 from fuzzywuzzy import fuzz, process
+from validate_email import validate_email
 import itertools
 
 class CourseNameException(Exception):
@@ -60,6 +61,39 @@ def update():
 @app.route('/')
 def index():
     return "Hello World!"
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    # input validation here
+    signup_request = request.get_json()
+    if signup_request['email'] != signup_request['confirmEmail']:
+        return jsonify({'status': 'Emails do not match'})
+    elif Student.query.filter_by(email=signup_request['email']).scalar():  #student already has an account
+        return jsonify({'status': 'User already exists'})
+    elif not validate_email(signup_request['email']) or signup_request['email'][-13:] != 'villanova.edu':
+        return jsonify({'status': 'Please enter a valid villanova.edu email address'})
+    else:
+        # Send the user an email to activate their account
+        # For now, just creating the user
+        student_record = Student(signup_request['email'],
+                                 signup_request['firstName'],
+                                 signup_request['lastName'],
+                                 signup_request['password'])
+        db.session.add(student_record)
+        db.session.commit()
+        return jsonify({'status': 'SUCCESS: Check your email'})
+
+@app.route('/login', methods=['POST'])
+def login():
+    login_request = request.get_json()
+    student_record = Student.query.filter_by(email=login_request['email']).first()
+    if not student_record:
+        return jsonify({'status': 'User does not exist. Please Register'})
+    # simple check for password for now before hashing/salting/authentication is added
+    elif student_record.password != login_request['password']:
+        return jsonify({'status': 'Invalid Password, please Try Again'})
+    else:
+        return jsonify({'status': '(fake)Authenticated'})
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
