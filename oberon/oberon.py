@@ -3,9 +3,11 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.exceptions import HTTPException
 import config
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
 from fuzzywuzzy import fuzz, process
 from validate_email import validate_email
+from flask_jwt import JWT, jwt_required
 import itertools
 
 class CourseNameException(Exception):
@@ -44,11 +46,19 @@ def create_app():
     return app
 
 app = create_app()
+jwt = JWT(app)
+user_datastore = SQLAlchemyUserDatastore(db, Student, Role)
+security = Security(app, user_datastore)
 
 instructors = {instructor.name: [department.name for department in instructor.departments] for instructor in Instructor.query.all()}
 instructor_names = instructors.keys()
 courses = {course.name: [attribute.name for attribute in course.attributes] for course in Course.query.all()}
 course_names = courses.keys()
+
+def authenticate(email, password):
+    user = User.query.filter_by(email=email).first()
+    if user and user.verify_password(password):
+        return user
 
 @app.route('/update')
 def update():
@@ -78,23 +88,28 @@ def signup():
     else:
         # Send the user an email to activate their account
         # For now, just creating the user
-        student_record = Student(signup_request['email'],
-                                 signup_request['firstName'],
-                                 signup_request['lastName'],
-                                 signup_request['password'])
-        db.session.add(student_record)
-        db.session.commit()
+        #student_record = Student(signup_request['email'],
+                                 #signup_request['firstName'],
+                                 # signup_request['lastName'],
+                                 # signup_request['password'])
+        #db.session.add(student_record)
+        #db.session.commit()
+        user_datastore.create_user(email=signup_request['email'],
+                                   first_name=signup_request['firstName'],
+                                   last_name=signup_request['lastName'],
+                                   password_hash=signup_request['password']) # Need to hash password
         return jsonify({'success': True,
                         'description': 'Signup was a success. Please check your email'})
 
-@app.route('/login', methods=['POST'])
-def login():
-    login_request = request.get_json()
-    student_record = Student.query.filter_by(email=login_request['email']).first()
+@app.route('/authenticate', methods=['POST'])
+
+def authenticate():
+    authenticate_request = request.get_json()
+    student_record = Student.query.filter_by(email=authenticate_request['email']).first()
     if not student_record:
         return jsonify({'status': 'User does not exist. Please Register'})
     # simple check for password for now before hashing/salting/authentication is added
-    elif student_record.password != login_request['password']:
+    elif student_record.password != authenticate_request['password']:
         return jsonify({'status': 'Invalid Password, please Try Again'})
     else:
         return jsonify({'status': '(fake)Authenticated'})

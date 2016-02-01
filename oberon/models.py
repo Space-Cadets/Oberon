@@ -1,6 +1,8 @@
 import os, sys
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
+from passlib.apps import custom_app_context as pwd_context
 
 db = SQLAlchemy()
 
@@ -9,14 +11,31 @@ student_sections = db.Table('student_sections',
                             db.Column('section_crn', db.Integer, db.ForeignKey('section.crn'))
                             )
 
+roles_users = db.Table('roles_users',
+                       db.Column('user_email', db.String(), db.ForeignKey('student.id')),
+                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+class Role(db.Model, RoleMixin):
+    __tablename__ = 'auth_role'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<Role(name=%s)>' % self.name
+
 class Student(db.Model):
     # SQL Alchemy Models structured like so
     email         = db.Column(db.String(), primary_key=True)
     first_name    = db.Column(db.String())
     last_name     = db.Column(db.String())
-    password      = db.Column(db.String())
-    date_created  = db.Column(db.DateTime)
+    password_hash = db.Column(db.String(128))
+    date_created  = db.Column(db.DateTime())
     #reviews       = db.relationship('Review', backref='student', lazy='dynamic')
+    roles         = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
     sections      = db.relationship('Section',
                                     secondary=student_sections,
                                     backref='students', lazy='dynamic')
@@ -27,6 +46,12 @@ class Student(db.Model):
         self.last_name = last_name
         self.password = password
         self.date_created = datetime.now()
+
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password_hash)
 
     def __repr__(self):
         return '<Student(email=%s, name=%s %s)' % (self.email, self.first_name, self.last_name)
