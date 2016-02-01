@@ -1,3 +1,10 @@
+# Oberon
+This repo contains the backend for the Villanova Courses platform
+
+## Primary Features
+ Fetches course data from Banner on a schedule
+ Parses Course data and writes the data into a database
+
 # To Run Oberon
 
 ## You will need . . .
@@ -17,8 +24,6 @@
 ### on Linux (Ubuntu for now)
 
 ```sudo apt-get install postgresql```
-
-
 
 ### setup
 
