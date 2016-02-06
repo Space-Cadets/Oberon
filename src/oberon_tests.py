@@ -119,6 +119,8 @@ class OberonTestCase(TestCase):
         signup_failure4 = self.client.post('/signup', data=json.dumps(invalid_pass), headers=headers)
         self.assert400(signup_failure4, "Invalid Passsword")
 
+    
+
     def tearDown(self):
         self.db.session.commit()
         self.db.drop_all()

@@ -68,8 +68,8 @@ def create_json_app(config):
     for code in default_exceptions.iterkeys():
         app.error_handler_spec[None][code] = make_json_error
     db.init_app(app)
-    #with app.app_context():
-        #db.create_all()
+    with app.app_context():
+        db.create_all()
     app.app_context().push()
     return app
 
@@ -100,10 +100,10 @@ security = Security(app, user_datastore)
 jwt = JWT(app, authenticate, jwt_identity)
 jwt.jwt_payload_handler(jwt_payload_handler)
 
-# instructors = {instructor.name: [department.name for department in instructor.departments] for instructor in Instructor.query.all()}
-# instructor_names = instructors.keys()
-# courses = {course.name: [attribute.name for attribute in course.attributes] for course in Course.query.all()}
-# course_names = courses.keys()
+instructors = {instructor.name: [department.name for department in instructor.departments] for instructor in Instructor.query.all()}
+instructor_names = instructors.keys()
+courses = {course.name: [attribute.name for attribute in course.attributes] for course in Course.query.all()}
+course_names = courses.keys()
 
 # Endpoints -------------------------------------
 @app.route('/update')

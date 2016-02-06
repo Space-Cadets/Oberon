@@ -1,8 +1,13 @@
 from oberon import create_json_app
 from mappings import departments
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role
+from models import user_datastore
 from test_users import test_users
 from test_reviews import test_reviews
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["sha512_crypt"],
+                           default="sha512_crypt",
+                           sha512_crypt__default_rounds=45000)
 
 import config
 
@@ -34,11 +39,14 @@ class DatabaseBuilder(object):
         self.num_new_sections = 0
 
     def build(self):
-        for course in self.courses:
-            self._add_course_data(course)
-        self.print_status()
-        #self.add_users()
-        #self.add_reviews()
+        #for course in self.courses:
+            #self._add_course_data(course)
+        user_role = Role(name='user', description="Just regular guy")
+        db.session.add(user_role)
+        db.session.commit()
+        #self.print_status()
+        self.add_users()
+        self.add_reviews()
 
     def print_status(self):
         print "Summary for Courses parsed"
@@ -155,12 +163,16 @@ class DatabaseBuilder(object):
     def add_users(self):
         print "Adding users"
         for user in test_users:
+            print user
             student_record = Student.query.filter_by(email=user['email']).first()
             if not student_record:
-                student_record = Student(user['email'], user['first_name'], user['last_name'], user['password'])
+                user_datastore.create_user(email=user['email'],
+                                   first_name=user['first_name'],
+                                   last_name=user['last_name'],
+                                   password_hash=pwd_context.encrypt(user['password']),
+                                   roles=['user'])
+                user_datastore.commit()
                 print "Added student: %s" % user['email']
-                db.session.add(student_record)
-                db.session.commit()
             else:
                 print "Student %s already exists" % user['email']
 
