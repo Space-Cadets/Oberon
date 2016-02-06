@@ -1,4 +1,5 @@
 import unittest
+import json
 from oberon import app
 from flask import Flask
 from flask.ext.testing import TestCase
@@ -41,7 +42,19 @@ class OberonTestCase(TestCase):
 
     def test_auth(self):
         self.assertIsNotNone(Student.query.filter_by(email="testuser@villanova.edu").first())
-        response = self.client.post('/auth', data=dict(username='testuser@villanova.edu',password='testpass'), headers=headers)
+        auth_success = self.client.post('/auth', data=json.dumps({'username': 'testuser@villanova.edu', 'password': 'password'}), headers=headers)
+        self.assert200(auth_success, "Response should be a 200")
+        self.assertIsNotNone(auth_success.json.get('access_token'), "/auth auth_success should return access token on user verification")
+
+    def test_auth_user_does_not_exist(self):
+        auth_failure = self.client.post('/auth', data=json.dumps({'username': 'doesnotexist@villanova.edu', 'password': 'test'}), headers=headers)
+        print auth_failure.json
+        self.assert401(auth_failure, "Response should be a 401")
+
+    def test_auth_wrong_password(self):
+        auth_failure = self.client.post('/auth', data=json.dumps({'username': 'testuser@villanova.edu', 'password': 'wrongpass'}), headers=headers)
+        self.assert401(auth_failure, "Response should be a 401")
+
 
     def tearDown(self):
         self.db.session.commit()
