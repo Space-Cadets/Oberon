@@ -5,15 +5,14 @@ from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, Rol
 from passlib.apps import custom_app_context as pwd_context
 
 db = SQLAlchemy()
-
 student_sections = db.Table('student_sections',
                             db.Column('student', db.String(), db.ForeignKey('student.email')),
                             db.Column('section_crn', db.Integer, db.ForeignKey('section.crn'))
                             )
 
 roles_users = db.Table('roles_users',
-                       db.Column('user_email', db.String(), db.ForeignKey('student.id')),
-                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+                       db.Column('user_email', db.String(), db.ForeignKey('student.email')),
+                       db.Column('role_id', db.Integer(), db.ForeignKey('auth_role.id')))
 
 class Role(db.Model, RoleMixin):
     __tablename__ = 'auth_role'
@@ -34,27 +33,25 @@ class Student(db.Model):
     last_name     = db.Column(db.String())
     password_hash = db.Column(db.String(128))
     date_created  = db.Column(db.DateTime())
+    active        = db.Column(db.Boolean())
     #reviews       = db.relationship('Review', backref='student', lazy='dynamic')
     roles         = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
     sections      = db.relationship('Section',
                                     secondary=student_sections,
                                     backref='students', lazy='dynamic')
 
-    def __init__(self, email, first_name, last_name, password):
-        self.email = email
-        self.first_name = first_name
-        self.last_name = last_name
-        self.password = password
-        self.date_created = datetime.now()
-
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
+        print "password is %s" % password
+        print "hash is %s" % self.password_hash
         return pwd_context.verify(password, self.password_hash)
 
     def __repr__(self):
         return '<Student(email=%s, name=%s %s)' % (self.email, self.first_name, self.last_name)
+
+user_datastore = SQLAlchemyUserDatastore(db, Student, Role)
 
 class Review(db.Model):
 
@@ -209,3 +206,5 @@ class Department(db.Model):
 
     def __repr__(self):
         return "<Department(code=%s, name=%s)>" % (self.code, self.name)
+
+
