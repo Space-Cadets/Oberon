@@ -76,6 +76,23 @@ def create_json_app(config):
 def json_response(body, code):
     return make_response(jsonify(body), code)
 
+def validate_signup(signup_json):
+    # check all fields are present and not none
+    fields = ['email', 'firstName', 'lastName', 'password']
+    for field in fields:
+        if field not in signup_json:
+            return False
+        else:
+            signup_json[field] = signup_json[field].strip()
+            if signup_json[field] == "":
+                return False
+    # check valid villanova email
+    if not validate_email(signup_json['email']) or signup_json['email'][-13:] != 'villanova.edu':
+        return False
+    #validated
+    return True
+
+
 app = create_json_app(config.Config)
 # Set up security -------------------------------
 security = Security(app, user_datastore)
@@ -106,18 +123,7 @@ def index():
 def signup():
     # input validation here
     signup_request = request.get_json()
-    if signup_request['email'] != signup_request['confirmEmail']:
-        return json_response({'status': 'failure',
-                              'message': 'Emails do not match'}, 400)
-    elif Student.query.filter_by(email=signup_request['email']).scalar():  #student already has an account
-        return jsonify({'status': 'failure',
-                        'message': 'User already exists'}, 400)
-    elif not validate_email(signup_request['email']) or signup_request['email'][-13:] != 'villanova.edu':
-        return json_response({'status': 'failure',
-                              'message': 'Please enter a valid villanova.edu email address'}, 400)
-    else:
-        # Send the user an email to activate their account
-        # For now, just creating the user
+    if validate_signup(signup_request):
         user_datastore.create_user(email=signup_request['email'],
                                    first_name=signup_request['firstName'],
                                    last_name=signup_request['lastName'],
@@ -125,6 +131,8 @@ def signup():
                                    roles=['user'])
         user_datastore.commit()
         return json_response({'status': 'success'}, 200)
+    else:
+        return json_response({'status': 'failure'}, 400)
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
