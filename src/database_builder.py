@@ -1,8 +1,10 @@
-from oberon import create_app
+from oberon import create_json_app
 from mappings import departments
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
 from test_users import test_users
 from test_reviews import test_reviews
+
+import config
 
 class DatabaseBuilder(object):
     """
@@ -14,7 +16,7 @@ class DatabaseBuilder(object):
         Courses is a list of course objects
         """
         self.courses = courses
-        self.app = create_app()
+        self.app = create_json_app(config.Config)
         self.app.app_context().push()
 
         self.instructors = {}
