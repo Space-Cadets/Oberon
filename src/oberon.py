@@ -65,7 +65,6 @@ app = create_json_app()
 security = Security(app, user_datastore)
 
 def authenticate(username, password):
-    print "AUTHENTICATING"
     user = user_datastore.find_user(email=username)
     if user and username == user.email and user.verify_password(password):
         return user
@@ -110,14 +109,14 @@ def signup():
     # input validation here
     signup_request = request.get_json()
     if signup_request['email'] != signup_request['confirmEmail']:
-        return jsonify({'status': 'success',
-                        'description': 'Emails do not match'})
+        return json_response({'status': 'failure',
+                              'message': 'Emails do not match'}, 400)
     elif Student.query.filter_by(email=signup_request['email']).scalar():  #student already has an account
-        return jsonify({'success': 'failure',
-                        'description': 'User already exists'})
+        return jsonify({'status': 'failure',
+                        'message': 'User already exists'}, 400)
     elif not validate_email(signup_request['email']) or signup_request['email'][-13:] != 'villanova.edu':
-        return jsonify({'success': False,
-                        'description': 'Please enter a valid villanova.edu email address'})
+        return json_response({'status': 'failure',
+                              'message': 'Please enter a valid villanova.edu email address'}, 400)
     else:
         # Send the user an email to activate their account
         # For now, just creating the user
@@ -127,22 +126,7 @@ def signup():
                                    password_hash=pwd_context.encrypt(signup_request['password']),
                                    roles=['user'])
         user_datastore.commit()
-        return jsonify({'success': True,
-                        'description': 'Signup was a success. Please check your email'})
-
-@app.route('/authenticate', methods=['POST'])
-def authenticate_endpoint():
-    auth_req = request.get_json()
-    student_record = Student.query.filter_by(email=auth_req['email'])
-    if not student_record:
-        return json_response({'status': 'failure',
-                              'message': 'User could not be found'}, 403)
-    # simple check for password for now before hashing/salting/authentication is added
-    elif student_record.first().verify_password(auth_req['password']):
         return json_response({'status': 'success'}, 200)
-    else:
-        return json_response({'status': 'failure',
-                              'message': 'Email and password do not match'}, 403)
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
