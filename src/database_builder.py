@@ -32,10 +32,10 @@ class DatabaseBuilder(object):
         self.num_new_sections = 0
 
     def build(self):
-        # for course in self.courses:
-        #     self._add_course_data(course)
-        # self.print_status()
-        # self.add_users()
+        for course in self.courses:
+            self._add_course_data(course)
+        self.print_status()
+        self.add_users()
         self.add_reviews()
 
     def print_status(self):

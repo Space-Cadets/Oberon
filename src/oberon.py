@@ -1,13 +1,17 @@
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import default_exceptions
 from werkzeug.exceptions import HTTPException
-import config
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
 from fuzzywuzzy import fuzz, process
 from validate_email import validate_email
 from flask_jwt import JWT, jwt_required
+from flask.ext.cors import CORS
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review
+from fuzzywuzzy import fuzz, process
+
+import config
 import itertools
 
 class CourseNameException(Exception):
@@ -34,6 +38,7 @@ def create_app():
         return response
 
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(config.Config)
 
     for code in default_exceptions.iterkeys():
