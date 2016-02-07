@@ -202,4 +202,15 @@ class Department(db.Model):
     def __repr__(self):
         return "<Department(code=%s, name=%s)>" % (self.code, self.name)
 
+class Trait(db.Model):
+    """
+    Traits for either course or instructor
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String())
+    type = db.Column(db.String())
+
+    def __repr__(self):
+        return "<Trait(id=%s, description=%s, type=%s)>" % (self.id, self.description, self.type)
+
 

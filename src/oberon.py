@@ -163,7 +163,8 @@ def get_instructor(instructor_name):
         instructor_data = {
             'name': instructor.name,
             'departments': [{'code': department.code,
-                             'name': department.name} for department in instructor.departments]
+                             'name': department.name} for department in instructor.departments],
+            'traits': []
         }
         instructor_courses = []
         for course in courses:
@@ -175,6 +176,13 @@ def get_instructor(instructor_name):
                 'attributes': [attribute.name for attribute in course_record.attributes]
             })
         instructor_data['courses'] = instructor_courses
+        instructor_data['reviews'] = [{'text': review.review_body,
+                                       'class_rating': review.class_rating,
+                                       'section_crn': review.section_crn,
+                                       'instructor_name': review.instructor_name,
+                                       'inst_rating': review.inst_rating,
+                                       'student': review.student_email} for review in instructor.reviews]
+        instructor_data['rating'] = sum([review['class_rating'] for review in instructor_data['reviews']]) / len(instructor_data['reviews'])
         return json_response({'status': 'success',
                               'data': instructor_data}, 200)
     except:

@@ -41,11 +41,11 @@ class DatabaseBuilder(object):
     def build(self):
         #for course in self.courses:
             #self._add_course_data(course)
-        user_role = Role(name='user', description="Just regular guy")
-        db.session.add(user_role)
-        db.session.commit()
+        #user_role = Role(name='user', description="Just regular guy")
+        #db.session.add(user_role)
+        #db.session.commit()
         #self.print_status()
-        self.add_users()
+        #self.add_users()
         self.add_reviews()
 
     def print_status(self):
