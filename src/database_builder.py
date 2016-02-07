@@ -2,6 +2,7 @@ from oberon import create_json_app
 from mappings import departments
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role
 from models import user_datastore
+from datetime import datetime
 from test_users import test_users
 from test_reviews import test_reviews
 from passlib.context import CryptContext
@@ -39,13 +40,13 @@ class DatabaseBuilder(object):
         self.num_new_sections = 0
 
     def build(self):
-        for course in self.courses:
-            self._add_course_data(course)
-        user_role = Role(name='user', description="Just regular guy")
-        db.session.add(user_role)
-        db.session.commit()
-        self.print_status()
-        self.add_users()
+        # for course in self.courses:
+        #     self._add_course_data(course)
+        # user_role = Role(name='user', description="Just regular guy")
+        # db.session.add(user_role)
+        # db.session.commit()
+        # self.print_status()
+        # self.add_users()
         self.add_reviews()
 
     def print_status(self):
@@ -180,7 +181,7 @@ class DatabaseBuilder(object):
         print "Adding Reviews"
         for review in test_reviews:
             print "Adding review: %s, %s" % (review['student'], review['section'])
-            review_record = Review(review['class_rating'], review['inst_rating'], review['review_body'])
+            review_record = Review(class_rating=review['class_rating'], inst_rating=review['inst_rating'], review_body=review['review_body'], date_created=datetime.now())
             student_record = Student.query.filter_by(email=review['student']).first()
             section_record = Section.query.filter_by(crn=review['section']).first()
             #print section_record.instructors[0]

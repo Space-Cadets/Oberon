@@ -3,6 +3,7 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.exceptions import HTTPException
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required
+from sqlalchemy import desc
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["sha512_crypt"],
                            default="sha512_crypt",
@@ -92,6 +93,126 @@ def validate_signup(signup_json):
     #validated
     return True
 
+def review_to_json(review):
+    """
+    Given a review object, returns a JSON representation of a review
+    and it's relevant information
+    """
+    return {
+        'text': review.review_body,
+        'class_rating': review.class_rating,
+        'section_crn': review.section_crn,
+        'course': review.section.course.name,
+        'subject': review.section.course.subject,
+        'subject_level': review.section.course.subject_level,
+        'instructor_name': review.instructor_name,
+        'inst_rating': review.inst_rating,
+        'student': review.student_email,
+        'date_created': review.date_created.isoformat()
+    }
+
+def reviews_to_json(list_of_reviews):
+    """
+    Given a list of review objects, returns a list of json objects
+    """
+    return [review_to_json(review) for review in list_of_reviews]
+
+def average_reviews(reviews, key):
+    """
+    given a list of review JSON objects, returns the average rating of the reviews
+    possible keys are 'inst_rating' or 'class_rating'
+    """
+    if reviews:
+        return sum([float(review[key]) for review in reviews]) / len(reviews)
+    else:
+        return None
+
+def get_instructor_courses(instructor):
+    """
+    Given an instructor object, returns a list of course objects taught by the instructor
+    """
+    course_names = list(set([section.course.name for section in instructor.sections]))
+    return [Course.query.filter_by(name=course_name).first() for course_name in course_names]
+
+def course_to_json(course):
+    """
+    Given a course object, returns a JSON object with relevant information
+    """
+    return {
+        'course_name': course.name,
+        'department': course.subject,
+        'level': course.subject_level,
+        'attributes': [attribute.name for attribute in course.attributes]
+    }
+
+def get_instructor_json(instructor):
+    """
+    Given an instructor object, returns it's JSON representation
+    """
+    courses = get_instructor_courses(instructor)
+    reviews = reviews_to_json(instructor.reviews)
+    return {
+        'name': instructor.name,
+        'departments': [{'code': department.code,
+                         'name': department.name} for department in instructor.departments],
+        'traits': [],
+        'courses': courses_to_json(courses),
+        'reviews': reviews,
+        'rating': average_reviews(reviews, 'inst_rating')
+    }
+
+def get_less_instructor_json(instructor):
+    """
+    Given an instructor object, returns it's header information
+    name
+    departments
+    traits
+    rating
+    """
+    courses = get_instructor_courses(instructor)
+    reviews = reviews_to_json(instructor.reviews)
+    return {
+        'name': instructor.name,
+        'departments': [{'code': department.code,
+                         'name': department.name} for department in instructor.departments],
+        'traits': [],
+        'courses': courses_to_json(courses),
+        'rating': average_reviews(reviews, 'inst_rating')
+    }
+
+def courses_to_json(list_of_courses):
+    """
+    Given a list of course objects, returns a list of course JSON objects
+    """
+    return [course_to_json(course) for course in list_of_courses]
+
+def get_course_reviews(course):
+    """
+    Given a course object, returns a list of all of the reviews of that course
+    """
+    review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
+    return [review_to_json(review) for review in review_objects]
+
+def get_course_instructors(course):
+    """
+    Given a course object, returns a list of all of the instructors of that course
+    """
+    course_instructors = list(set(itertools.chain.from_iterable([[instructor.name for instructor in section.instructors] for section in course.sections])))
+    instructor_objects = [Instructor.query.filter_by(name=instructor).first() for instructor in course_instructors]
+    return [get_less_instructor_json(instructor) for instructor in instructor_objects]
+
+def get_course_json(course):
+    """
+    Given a course object, returns a list of it's json representation
+    """
+    return {
+       'name': course.name,
+       'subject_level': course.subject_level,
+       'subject': course.subject,
+       'reviews': get_course_reviews(course),
+       'instructors': get_course_instructors(course),
+       'traits': [], # blank for now
+   }
 
 app = create_json_app(config.Config)
 # Set up security -------------------------------
@@ -99,11 +220,6 @@ security = Security(app, user_datastore)
 
 jwt = JWT(app, authenticate, jwt_identity)
 jwt.jwt_payload_handler(jwt_payload_handler)
-
-#instructors = {instructor.name: [department.name for department in instructor.departments] for instructor in Instructor.query.all()}
-#instructor_names = instructors.keys()
-#courses = {course.name: [attribute.name for attribute in course.attributes] for course in Course.query.all()}
-#course_names = courses.keys()
 
 # Endpoints -------------------------------------
 @app.route('/update')
@@ -151,58 +267,41 @@ def get_courses(search_string):
 
 @app.route('/instructors/f/<search_string>', methods=['GET'])
 def get_instructors(search_string):
-    instructor_data = [{instructor[0]:instructors[instructor[0]]} for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
+    instructor_names = [instructor.name for instructor in Instructor.query.all()]
+    instructors = [instructor for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
+    instructor_data = [get_less_instructor_json(Instructor.query.filter_by(name=instructor[0]).first()) for instructor in instructors]
+
+
+    
+
+    #instructor_data = [{get_less_instructor_json(instructor)}]
+
+
+    #instructor_data = [{instructor[0]:instructors[instructor[0]]} for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
     return json_response({'status': 'success',
                           'data': instructor_data}, 200)
 
 @app.route('/instructors/<instructor_name>', methods=['GET'])
 def get_instructor(instructor_name):
-    try:
-        instructor = Instructor.query.filter_by(name=instructor_name).first()
-        courses = list(set([section.course.name for section in instructor.sections]))
-        instructor_data = {
-            'name': instructor.name,
-            'departments': [{'code': department.code,
-                             'name': department.name} for department in instructor.departments],
-            'traits': []
-        }
-        instructor_courses = []
-        for course in courses:
-            course_record = Course.query.filter_by(name=course).first()
-            instructor_courses.append({
-                'course_name': course,
-                'department': course_record.subject,
-                'level': course_record.subject_level,
-                'attributes': [attribute.name for attribute in course_record.attributes]
-            })
-        instructor_data['courses'] = instructor_courses
-        instructor_data['reviews'] = [{'text': review.review_body,
-                                       'class_rating': review.class_rating,
-                                       'section_crn': review.section_crn,
-                                       'instructor_name': review.instructor_name,
-                                       'inst_rating': review.inst_rating,
-                                       'student': review.student_email} for review in instructor.reviews]
-        instructor_data['rating'] = sum([review['class_rating'] for review in instructor_data['reviews']]) / len(instructor_data['reviews'])
-        return json_response({'status': 'success',
+    #try:
+    instructor = Instructor.query.filter_by(name=instructor_name).first()
+    instructor_data = get_instructor_json(instructor)
+    return json_response({'status': 'success',
                               'data': instructor_data}, 200)
-    except:
-        return json_response({'status': 'failure',
-                              'message': 'Instructor does not exist'}, 400)
+    #except:
+        #return json_response({'status': 'failure',
+                              #'message': 'Server Error has occured'}, 500)
 
 @app.route('/courses/<course_name>', methods=['GET'])
 def get_course(course_name):
-    try:
-        course = Course.query.filter_by(name=course_name).first()
-        course_data = {
-            'name': course.name,
-            'subject_level': course.subject_level,
-            'subject': course.subject
-        }
-        return json_response({'status': 'success',
+    #try:
+    course = Course.query.filter_by(name=course_name).first()
+    course_data = get_course_json(course)
+    return json_response({'status': 'success',
                               'data': course_data}, 200)
-    except:
-        return json_response({'status': 'failure',
-                              'message': 'Course does not exist'}, 400)
+    #except:
+        #return json_response({'status': 'failure',
+                              #'message': 'Server error has occured'}, 500)
 
 @app.route('/reviews', methods=['POST'])
 def post_review():
@@ -230,19 +329,28 @@ def get_student_reviews(student_email):
     return json_response({'reviews': reviews}, 200)
 
 @app.route('/reviews/instructor/<instructor>', methods=['GET'])
-def get_instructor_reviews(instructor):
+def get_single_instructor_reviews(instructor):
     print instructor
     instructor = Instructor.query.filter_by(name=instructor).first()
     reviews = [{'text': review.review_body} for review in instructor.reviews]
     return json_response({'reviews': reviews}, 200)
 
 @app.route('/reviews/course/<course>', methods=['GET'])
-def get_course_reviews(course):
+def get_single_course_reviews(course):
     print course
     course = Course.query.filter_by(name=course).first()#.sections
     review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
     reviews = [{'text': review.review_body} for review in review_objects]
     return json_response({'reviews': reviews}, 200)
+
+@app.route('/recent', methods=['GET'])
+def get_recent_reviews():
+    reviews = Review.query.order_by(desc(Review.date_created)).limit(10).all()
+    review_data = [review_to_json(review) for review in reviews]
+
+    return json_response({'status': 'success',
+                          'data': review_data}, 200)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
