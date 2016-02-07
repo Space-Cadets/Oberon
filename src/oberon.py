@@ -239,6 +239,7 @@ def index():
 def signup():
     # input validation here
     signup_request = request.get_json()
+    print "Signup info is: %s" % signup_request
     if validate_signup(signup_request):
         user_datastore.create_user(email=signup_request['email'],
                                    first_name=signup_request['firstName'],

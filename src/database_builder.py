@@ -40,13 +40,13 @@ class DatabaseBuilder(object):
         self.num_new_sections = 0
 
     def build(self):
-        # for course in self.courses:
-        #     self._add_course_data(course)
-        # user_role = Role(name='user', description="Just regular guy")
-        # db.session.add(user_role)
-        # db.session.commit()
-        # self.print_status()
-        # self.add_users()
+        for course in self.courses:
+            self._add_course_data(course)
+        user_role = Role(name='user', description="Just regular guy")
+        db.session.add(user_role)
+        db.session.commit()
+        self.print_status()
+        self.add_users()
         self.add_reviews()
 
     def print_status(self):
@@ -184,13 +184,9 @@ class DatabaseBuilder(object):
             review_record = Review(class_rating=review['class_rating'], inst_rating=review['inst_rating'], review_body=review['review_body'], date_created=datetime.now())
             student_record = Student.query.filter_by(email=review['student']).first()
             section_record = Section.query.filter_by(crn=review['section']).first()
-            #print section_record.instructors[0]
             student_record.reviews.append(review_record)
             section_record.reviews.append(review_record)
             section_record.instructors[0].reviews.append(review_record)
-            #print student_record.reviews
-            #print section_record.reviews
-            #print section_record.instructors[0].reviews
             db.session.add(review_record)
             db.session.add(student_record)
             db.session.add(section_record)
