@@ -159,9 +159,22 @@ def get_instructors(search_string):
 def get_instructor(instructor_name):
     try:
         instructor = Instructor.query.filter_by(name=instructor_name).first()
+        courses = list(set([section.course.name for section in instructor.sections]))
         instructor_data = {
             'name': instructor.name,
+            'departments': [{'code': department.code,
+                             'name': department.name} for department in instructor.departments]
         }
+        instructor_courses = []
+        for course in courses:
+            course_record = Course.query.filter_by(name=course).first()
+            instructor_courses.append({
+                'course_name': course,
+                'department': course_record.subject,
+                'level': course_record.subject_level,
+                'attributes': [attribute.name for attribute in course_record.attributes]
+            })
+        instructor_data['courses'] = instructor_courses
         return json_response({'status': 'success',
                               'data': instructor_data}, 200)
     except:
