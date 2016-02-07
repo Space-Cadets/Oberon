@@ -339,7 +339,7 @@ def get_single_course_reviews(course):
 def get_single_review(id):
     review = Review.query.get(id)
     return json_response({'status': 'success',
-                         'data': review_to_json(review)})
+                          'data': review_to_json(review)}, 200)
 
 @app.route('/recent', methods=['GET'])
 def get_recent_reviews():
