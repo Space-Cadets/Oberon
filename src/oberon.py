@@ -79,6 +79,8 @@ def json_response(body, code):
 
 def validate_signup(signup_json):
     # check all fields are present and not none
+    if not signup_json:
+        return False
     fields = ['email', 'firstName', 'lastName', 'password']
     for field in fields:
         if field not in signup_json:
