@@ -100,10 +100,10 @@ security = Security(app, user_datastore)
 jwt = JWT(app, authenticate, jwt_identity)
 jwt.jwt_payload_handler(jwt_payload_handler)
 
-instructors = {instructor.name: [department.name for department in instructor.departments] for instructor in Instructor.query.all()}
-instructor_names = instructors.keys()
-courses = {course.name: [attribute.name for attribute in course.attributes] for course in Course.query.all()}
-course_names = courses.keys()
+#instructors = {instructor.name: [department.name for department in instructor.departments] for instructor in Instructor.query.all()}
+#instructor_names = instructors.keys()
+#courses = {course.name: [attribute.name for attribute in course.attributes] for course in Course.query.all()}
+#course_names = courses.keys()
 
 # Endpoints -------------------------------------
 @app.route('/update')
@@ -136,9 +136,16 @@ def signup():
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
-    course_data = [{'course_name': course[0],
-                    'attributes': courses[course[0]],
-                    'match': course[1]} for course in process.extract(search_string, course_names, limit=100) if course[1] > 60]
+    course_names = [course.name for course in Course.query.all()]
+    courses = [course for course in process.extract(search_string, course_names, limit=100) if course[1] > 60]
+    course_data = []
+    for course in courses:
+        course_record = Course.query.filter_by(name=course[0]).first()
+        course_data.append({ 'course_name': course[0],
+                             'department': course_record.subject,
+                             'level': course_record.subject_level,
+                             'attributes': [attribute.name for attribute in course_record.attributes],
+                             'match': course[1]})
     return json_response({'status': 'success',
                           'data': course_data}, 200)
 
