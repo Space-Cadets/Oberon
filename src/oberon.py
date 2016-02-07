@@ -312,9 +312,9 @@ def post_review():
         db.session.add(student_record)
         db.session.add(section_record)
         db.session.add(instructor_record)
+        return json_response({'status': 'success'}, 200)
     except:
         return json_repsonse({'status': 'failure'}, 500)
-    return json_response({'status': 'success'}, 200)
 
 @app.route('/reviews/student/<student_email>', methods=['GET'])
 def get_student_reviews(student_email):
@@ -335,11 +335,14 @@ def get_single_course_reviews(course):
     reviews = [{'text': review.review_body} for review in review_objects]
     return json_response({'reviews': reviews}, 200)
 
+@app.route('/reviews/<id>', methods=['GET'])
+def get_single_review(id):
+    return Review.query.get(id)
+
 @app.route('/recent', methods=['GET'])
 def get_recent_reviews():
     reviews = Review.query.order_by(desc(Review.date_created)).limit(10).all()
     review_data = [review_to_json(review) for review in reviews]
-
     return json_response({'status': 'success',
                           'data': review_data}, 200)
 
