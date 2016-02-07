@@ -270,38 +270,32 @@ def get_instructors(search_string):
     instructor_names = [instructor.name for instructor in Instructor.query.all()]
     instructors = [instructor for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
     instructor_data = [get_less_instructor_json(Instructor.query.filter_by(name=instructor[0]).first()) for instructor in instructors]
-
-
-    
-
-    #instructor_data = [{get_less_instructor_json(instructor)}]
-
-
-    #instructor_data = [{instructor[0]:instructors[instructor[0]]} for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
+    instructor_data = [{get_less_instructor_json(instructor)}]
+    instructor_data = [{instructor[0]:instructors[instructor[0]]} for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
     return json_response({'status': 'success',
                           'data': instructor_data}, 200)
 
 @app.route('/instructors/<instructor_name>', methods=['GET'])
 def get_instructor(instructor_name):
-    #try:
-    instructor = Instructor.query.filter_by(name=instructor_name).first()
-    instructor_data = get_instructor_json(instructor)
-    return json_response({'status': 'success',
-                              'data': instructor_data}, 200)
-    #except:
-        #return json_response({'status': 'failure',
-                              #'message': 'Server Error has occured'}, 500)
+    try:
+        instructor = Instructor.query.filter_by(name=instructor_name).first()
+        instructor_data = get_instructor_json(instructor)
+        return json_response({'status': 'success',
+                          'data': instructor_data}, 200)
+    except:
+        return json_response({'status': 'failure',
+                              'message': 'Server Error has occured'}, 500)
 
 @app.route('/courses/<course_name>', methods=['GET'])
 def get_course(course_name):
-    #try:
-    course = Course.query.filter_by(name=course_name).first()
-    course_data = get_course_json(course)
-    return json_response({'status': 'success',
+    try:
+        course = Course.query.filter_by(name=course_name).first()
+        course_data = get_course_json(course)
+        return json_response({'status': 'success',
                               'data': course_data}, 200)
-    #except:
-        #return json_response({'status': 'failure',
-                              #'message': 'Server error has occured'}, 500)
+    except:
+        return json_response({'status': 'failure',
+                              'message': 'Server error has occured'}, 500)
 
 @app.route('/reviews', methods=['POST'])
 def post_review():
@@ -330,14 +324,12 @@ def get_student_reviews(student_email):
 
 @app.route('/reviews/instructor/<instructor>', methods=['GET'])
 def get_single_instructor_reviews(instructor):
-    print instructor
     instructor = Instructor.query.filter_by(name=instructor).first()
     reviews = [{'text': review.review_body} for review in instructor.reviews]
     return json_response({'reviews': reviews}, 200)
 
 @app.route('/reviews/course/<course>', methods=['GET'])
 def get_single_course_reviews(course):
-    print course
     course = Course.query.filter_by(name=course).first()#.sections
     review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
     reviews = [{'text': review.review_body} for review in review_objects]
@@ -350,7 +342,6 @@ def get_recent_reviews():
 
     return json_response({'status': 'success',
                           'data': review_data}, 200)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
