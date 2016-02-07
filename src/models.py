@@ -20,9 +20,6 @@ class Role(db.Model, RoleMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
-    def __init__(self, name):
-        self.name = name
-
     def __repr__(self):
         return '<Role(name=%s)>' % self.name
 
@@ -44,12 +41,10 @@ class Student(db.Model):
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        print "password is %s" % password
-        print "hash is %s" % self.password_hash
         return pwd_context.verify(password, self.password_hash)
 
     def __repr__(self):
-        return '<Student(email=%s, name=%s %s)' % (self.email, self.first_name, self.last_name)
+        return '<Student(email=%s, name=%s %s)>' % (self.email, self.first_name, self.last_name)
 
 user_datastore = SQLAlchemyUserDatastore(db, Student, Role)
 

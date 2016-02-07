@@ -43,29 +43,7 @@ def make_json_error(ex):
                                 if isinstance(ex, HTTPException)
                                 else 500)
     return response
-
-def create_json_app():
-    app = Flask(__name__)
-    CORS(app)
-    app.config.from_object(config.Config)
-    for code in default_exceptions.iterkeys():
-        app.error_handler_spec[None][code] = make_json_error
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-    app.app_context().push()
-    return app
-
-def json_response(body, code):
-    return make_response(jsonify(body), code)
-
-app = create_json_app()
-
-# Set up security -------------------------------
-security = Security(app, user_datastore)
-
 def authenticate(username, password):
-    print "AUTHENTICATING"
     user = user_datastore.find_user(email=username)
     if user and username == user.email and user.verify_password(password):
         return user
@@ -82,6 +60,42 @@ def jwt_payload_handler(identity):
     nbf = iat + app.config.get('JWT_NOT_BEFORE_DELTA')
     identity = getattr(identity, 'email') or identity['email']
     return {'exp': exp, 'iat': iat, 'nbf': nbf, 'identity': identity}
+
+def create_json_app(config):
+    app = Flask(__name__)
+    CORS(app)
+    app.config.from_object(config)
+    for code in default_exceptions.iterkeys():
+        app.error_handler_spec[None][code] = make_json_error
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+    app.app_context().push()
+    return app
+
+def json_response(body, code):
+    return make_response(jsonify(body), code)
+
+def validate_signup(signup_json):
+    # check all fields are present and not none
+    fields = ['email', 'firstName', 'lastName', 'password']
+    for field in fields:
+        if field not in signup_json:
+            return False
+        else:
+            signup_json[field] = signup_json[field].strip()
+            if signup_json[field] == "":
+                return False
+    # check valid villanova email
+    if not validate_email(signup_json['email']) or signup_json['email'][-13:] != 'villanova.edu':
+        return False
+    #validated
+    return True
+
+
+app = create_json_app(config.Config)
+# Set up security -------------------------------
+security = Security(app, user_datastore)
 
 jwt = JWT(app, authenticate, jwt_identity)
 jwt.jwt_payload_handler(jwt_payload_handler)
@@ -109,40 +123,16 @@ def index():
 def signup():
     # input validation here
     signup_request = request.get_json()
-    if signup_request['email'] != signup_request['confirmEmail']:
-        return jsonify({'status': 'success',
-                        'description': 'Emails do not match'})
-    elif Student.query.filter_by(email=signup_request['email']).scalar():  #student already has an account
-        return jsonify({'success': 'failure',
-                        'description': 'User already exists'})
-    elif not validate_email(signup_request['email']) or signup_request['email'][-13:] != 'villanova.edu':
-        return jsonify({'success': False,
-                        'description': 'Please enter a valid villanova.edu email address'})
-    else:
-        # Send the user an email to activate their account
-        # For now, just creating the user
+    if validate_signup(signup_request):
         user_datastore.create_user(email=signup_request['email'],
                                    first_name=signup_request['firstName'],
                                    last_name=signup_request['lastName'],
                                    password_hash=pwd_context.encrypt(signup_request['password']),
                                    roles=['user'])
         user_datastore.commit()
-        return jsonify({'success': True,
-                        'description': 'Signup was a success. Please check your email'})
-
-@app.route('/authenticate', methods=['POST'])
-def authenticate_endpoint():
-    auth_req = request.get_json()
-    student_record = Student.query.filter_by(email=auth_req['email'])
-    if not student_record:
-        return json_response({'status': 'failure',
-                              'message': 'User could not be found'}, 403)
-    # simple check for password for now before hashing/salting/authentication is added
-    elif student_record.first().verify_password(auth_req['password']):
         return json_response({'status': 'success'}, 200)
     else:
-        return json_response({'status': 'failure',
-                              'message': 'Email and password do not match'}, 403)
+        return json_response({'status': 'failure'}, 400)
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
