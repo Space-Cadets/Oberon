@@ -133,6 +133,7 @@ def get_instructor_courses(instructor):
     """
     Given an instructor object, returns a list of course objects taught by the instructor
     """
+    print instructor
     course_names = list(set([section.course.name for section in instructor.sections]))
     return [Course.query.filter_by(name=course_name).first() for course_name in course_names]
 
@@ -273,8 +274,6 @@ def get_instructors(search_string):
     instructor_names = [instructor.name for instructor in Instructor.query.all()]
     instructors = [instructor for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
     instructor_data = [get_less_instructor_json(Instructor.query.filter_by(name=instructor[0]).first()) for instructor in instructors]
-    instructor_data = [{get_less_instructor_json(instructor)}]
-    instructor_data = [{instructor[0]:instructors[instructor[0]]} for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
     return json_response({'status': 'success',
                           'data': instructor_data}, 200)
 
