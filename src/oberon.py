@@ -259,7 +259,7 @@ def signup():
                                   'message': 'User successfully created'}, 200)
     else:
         return json_response({'status': 'failure',
-                              'A server error has occured.'}, 500)
+                              'message': 'A server error has occured'}, 500)
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
