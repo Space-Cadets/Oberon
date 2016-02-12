@@ -80,7 +80,7 @@ class Instructor(db.Model):
 
     name          = db.Column(db.String(), primary_key=True)
     #reviews       = db.relationship('Review', backref=db.backref('instructors'))
-    traits       = db.relationship('Trait', )
+    #traits       = db.relationship('Trait', )
     departments   = db.relationship('Department',
                                     secondary=instructor_departments,
                                     backref=db.backref('instructors', lazy='dynamic'))
