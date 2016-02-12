@@ -244,15 +244,22 @@ def signup():
     signup_request = request.get_json()
     print "Signup info is: %s" % signup_request
     if validate_signup(signup_request):
-        user_datastore.create_user(email=signup_request['email'],
-                                   first_name=signup_request['firstName'],
-                                   last_name=signup_request['lastName'],
-                                   password_hash=pwd_context.encrypt(signup_request['password']),
-                                   roles=['user'])
-        user_datastore.commit()
-        return json_response({'status': 'success'}, 200)
+        user = Student.query.filter_by(name=signup_request['email']).first()
+        if user:
+            return json_response({'status': 'failure',
+                                  'message': 'User already exists'}, 409)
+        else:
+            user_datastore.create_user(email=signup_request['email'],
+                                       first_name=signup_request['firstName'],
+                                       last_name=signup_request['lastName'],
+                                       password_hash=pwd_context.encrypt(signup_request['password']),
+                                       roles=['user'])
+            user_datastore.commit()
+            return json_response({'status': 'success',
+                                  'message': 'User successfully created'}, 200)
     else:
-        return json_response({'status': 'failure'}, 400)
+        return json_response({'status': 'failure',
+                              'A server error has occured.'}, 500)
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
 def get_courses(search_string):
@@ -356,8 +363,12 @@ def get_single_course_reviews(course):
 def get_single_review(id):
     try:
         review = Review.query.get(id)
-        return json_response({'status': 'success',
-                              'data': review_to_json(review)}, 200)
+        if review:
+            return json_response({'status': 'success',
+                                  'data': review_to_json(review)}, 200)
+        else:
+            return json_response({'status': 'failure',
+                                  'message': 'No review with this id'}, 400)
     except:
         return json_response({'status': 'failure',
                               'message': 'A server error has occured.'}, 500)
