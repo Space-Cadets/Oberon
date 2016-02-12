@@ -262,6 +262,7 @@ def signup():
                               'message': 'A server error has occured'}, 500)
 
 @app.route('/courses/f/<search_string>', methods=['GET'])
+@jwt_required()
 def get_courses(search_string):
     course_names = [course.name for course in Course.query.all()]
     courses = [course for course in process.extract(search_string, course_names, limit=100) if course[1] > 60]
