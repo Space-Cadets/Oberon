@@ -281,9 +281,14 @@ def get_instructors(search_string):
 def get_instructor(instructor_name):
     try:
         instructor = Instructor.query.filter_by(name=instructor_name).first()
-        instructor_data = get_instructor_json(instructor)
-        return json_response({'status': 'success',
-                          'data': instructor_data}, 200)
+        if instructor:
+            instructor_data = get_instructor_json(instructor)
+            return json_response({'status': 'success',
+                                  'data': instructor_data}, 200)
+        else:
+            message = "Bad Request. No instructor named %s" % instructor_name
+            return json_response({'status': 'failure',
+                                  'message': message}, 400)
     except:
         return json_response({'status': 'failure',
                               'message': 'Server Error has occured'}, 500)
@@ -292,9 +297,14 @@ def get_instructor(instructor_name):
 def get_course(course_name):
     try:
         course = Course.query.filter_by(name=course_name).first()
-        course_data = get_course_json(course)
-        return json_response({'status': 'success',
+        if course:
+            course_data = get_course_json(course)
+            return json_response({'status': 'success',
                               'data': course_data}, 200)
+        else:
+            message = "Bad Request. No course named %s" % course_name
+            return json_response({'status': 'failure',
+                                  'message': message}, 400)
     except:
         return json_response({'status': 'failure',
                               'message': 'Server error has occured'}, 500)
