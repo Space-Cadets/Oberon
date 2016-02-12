@@ -320,7 +320,7 @@ def get_course(course_name):
 def post_review():
     try:
         review_request = request.get_json()
-        review_record = Review(review_request['class_rating'], review_request['inst_rating'], review_request['review_body'])
+        review_record = Review(review_request['classRating'], review_request['instRating'], review_request['reviewBody'])
         student_record = Student.query.filter_by(email=review_request['student']).first()
         section_record = Section.query.filter_by(crn=review_request['section']).first()
         instructor_record = Instructor.query.filter_by(name=review_request['instructor']).first()
@@ -331,33 +331,16 @@ def post_review():
         db.session.add(student_record)
         db.session.add(section_record)
         db.session.add(instructor_record)
-        return json_response({'status': 'success'}, 200)
+        return json_response({'status': 'success',
+                              'message': 'Review Successfully Added'}, 200)
     except:
-        return json_repsonse({'status': 'failure'}, 500)
+        return json_response({'status': 'failure'}, 500)
 
 @app.route('/reviews/student/<student_email>', methods=['GET'])
 def get_student_reviews(student_email):
     student = Student.query.filter_by(email=student_email).first()
-    reviews = [{'text': review.review_body} for review in student.reviews]
+    reviews = [review_to_json(review) for review in student.reviews]
     return json_response({'reviews': reviews}, 200)
-
-@app.route('/reviews/instructor/<instructor>', methods=['GET'])
-def get_single_instructor_reviews(instructor):
-    instructor = Instructor.query.filter_by(name=instructor).first()
-    reviews = [{'text': review.review_body} for review in instructor.reviews]
-    return json_response({'reviews': reviews}, 200)
-
-@app.route('/reviews/course/<course>', methods=['GET'])
-def get_single_course_reviews(course):
-    try:
-        course = Course.query.filter_by(name=course).first()
-        review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
-        reviews = [{'text': review.review_body} for review in review_objects]
-        return json_response({'status': 'success',
-                              'data': reviews}, 200)
-    except:
-        return json_response({'status': 'failure',
-                              'message': 'A server error has occured.'}, 500)
 
 @app.route('/reviews/<id>', methods=['GET'])
 def get_single_review(id):
@@ -383,6 +366,10 @@ def get_recent_reviews():
     except:
         return json_response({'status': 'failure',
                               'message': 'A server error has occurred.'}, 500)
+
+@app.route('/traits', methods=['GET'])
+def get_all_traits():
+    pass
 
 if __name__ == "__main__":
     app.run(debug=True)
