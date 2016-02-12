@@ -342,23 +342,36 @@ def get_single_instructor_reviews(instructor):
 
 @app.route('/reviews/course/<course>', methods=['GET'])
 def get_single_course_reviews(course):
-    course = Course.query.filter_by(name=course).first()#.sections
-    review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
-    reviews = [{'text': review.review_body} for review in review_objects]
-    return json_response({'reviews': reviews}, 200)
+    try:
+        course = Course.query.filter_by(name=course).first()
+        review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
+        reviews = [{'text': review.review_body} for review in review_objects]
+        return json_response({'status': 'success',
+                              'data': reviews}, 200)
+    except:
+        return json_response({'status': 'failure',
+                              'message': 'A server error has occured.'}, 500)
 
 @app.route('/reviews/<id>', methods=['GET'])
 def get_single_review(id):
-    review = Review.query.get(id)
-    return json_response({'status': 'success',
-                          'data': review_to_json(review)}, 200)
+    try:
+        review = Review.query.get(id)
+        return json_response({'status': 'success',
+                              'data': review_to_json(review)}, 200)
+    except:
+        return json_response({'status': 'failure',
+                              'message': 'A server error has occured.'}, 500)
 
 @app.route('/recent', methods=['GET'])
 def get_recent_reviews():
-    reviews = Review.query.order_by(desc(Review.date_created)).limit(10).all()
-    review_data = [review_to_json(review) for review in reviews]
-    return json_response({'status': 'success',
-                          'data': review_data}, 200)
+    try:
+        reviews = Review.query.order_by(desc(Review.date_created)).limit(10).all()
+        review_data = [review_to_json(review) for review in reviews]
+        return json_response({'status': 'success',
+                              'data': review_data}, 200)
+    except:
+        return json_response({'status': 'failure',
+                              'message': 'A server error has occurred.'}, 500)
 
 if __name__ == "__main__":
     app.run(debug=True)
