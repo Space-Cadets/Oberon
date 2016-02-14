@@ -1,10 +1,11 @@
 from oberon import create_json_app
 from mappings import departments
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
 from models import user_datastore
 from datetime import datetime
 from test_users import test_users
 from test_reviews import test_reviews
+from test_traits import test_traits
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["sha512_crypt"],
                            default="sha512_crypt",
@@ -48,6 +49,8 @@ class DatabaseBuilder(object):
         self.print_status()
         self.add_users()
         self.add_reviews()
+        self.add_traits()
+        db.session.commit()
 
     def print_status(self):
         print "Summary for Courses parsed"
@@ -76,7 +79,7 @@ class DatabaseBuilder(object):
             department_record = Department(course.subject, departments[course.subject])
             db.session.add(department_record)
             print "Adding Department: \"%s\"" % course.subject
-            db.session.commit()
+            #db.session.commit()
             self.num_new_departments += 1
         if course.subject not in self.departments:
             self.departments
@@ -98,11 +101,11 @@ class DatabaseBuilder(object):
                 self.num_new_instructors += 1
             instructor_record.departments.append(self._get_or_create_department(course))
             db.session.add(instructor_record)
-            db.session.commit()
             instructor_list.append(instructor_record)
             if instructor not in self.instructors:
                 self.num_instructors += 1
                 self.instructors[instructor] = True
+        #db.session.commit()
         return instructor_list
 
     def _get_or_create_attributes(self, course):
@@ -113,8 +116,9 @@ class DatabaseBuilder(object):
                 attribute_record = Attribute(attribute)
                 print "Adding Attribute: \"%s\"" % attribute
                 db.session.add(attribute_record)
-                db.session.commit()
             attribute_list.append(attribute_record)
+
+        #db.session.commit()
         return attribute_list
 
     def _get_or_create_restrictions(self, course):
@@ -125,7 +129,7 @@ class DatabaseBuilder(object):
                 restriction_record = Restriction(restriction)
                 print "Adding Restriction: \"%s\"" % restriction
                 db.session.add(restriction_record)
-                db.session.commit()
+                #db.session.commit()
             restriction_list.append(restriction_record)
         return restriction_list
 
@@ -138,7 +142,7 @@ class DatabaseBuilder(object):
             self.num_new_sections += 1
         section_record.instructors = instructors
         db.session.add(section_record)
-        db.session.commit()
+        #db.session.commit()
         if course.crn not in self.crns:
             self.num_sections += 1
             self.crns[course.crn] = True
@@ -158,7 +162,7 @@ class DatabaseBuilder(object):
         course_record.restrictions = restrictions
         course_record.sections.append(section)
         db.session.add(course_record)
-        db.session.commit()
+        #db.session.commit()
         return course_record
 
     def add_users(self):
@@ -192,3 +196,28 @@ class DatabaseBuilder(object):
             db.session.add(section_record)
             db.session.add(section_record.instructors[0])
         db.session.commit()
+
+    def add_traits(self):
+        print "Adding Traits"
+        for trait in test_traits:
+            trait_record = None
+            if trait['type'] == 'course':
+                trait_record = CourseTrait(description=trait['desc'])
+                print "Added trait %s" % trait['desc']
+            elif trait['type'] == 'instructor':
+                trait_record = InstructorTrait(description=trait['desc'])
+                print "Added trait %s" % trait['desc']
+            else:
+                raise Exception
+
+            if trait_record:
+                db.session.add(trait_record)
+            else:
+                raise Exception
+        db.session.commit()
+
+    def add_instructor_trait(self, instructor_name, trait_id):
+        record = InstructorTraits(instructor_name=instructor_name, trait_id=trait_id, count=0)
+        db.session.add(record)
+        db.session.commit()
+

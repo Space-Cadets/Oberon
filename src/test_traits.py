@@ -1,4 +1,4 @@
-traits = [
+test_traits = [
     {
         'desc': 'Interesting',
         'type': 'course'

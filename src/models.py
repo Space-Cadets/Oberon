@@ -79,8 +79,7 @@ instructor_departments = db.Table('instructor_departments',
 class Instructor(db.Model):
 
     name          = db.Column(db.String(), primary_key=True)
-    #reviews       = db.relationship('Review', backref=db.backref('instructors'))
-    #traits       = db.relationship('Trait', )
+    traits        = db.relationship('InstructorTraits', backref='instructor')
     departments   = db.relationship('Department',
                                     secondary=instructor_departments,
                                     backref=db.backref('instructors', lazy='dynamic'))
@@ -152,7 +151,7 @@ course_restrictions = db.Table('course_restrictions',
 class Course(db.Model):
 
     id            = db.Column(db.Integer, primary_key=True)
-    name          = db.Column(db.String())
+    name          = db.Column(db.String(), unique=True)
     subject       = db.Column(db.String(),  nullable=True)
     department_id = db.Column(db.String(), db.ForeignKey('department.code'))
     subject_level = db.Column(db.String(),  nullable=True)
@@ -160,6 +159,7 @@ class Course(db.Model):
     credits       = db.Column(db.Integer, nullable=True)
     prerequisites = db.Column(db.String(),  nullable=True)
     department    = db.relationship('Department', backref=db.backref('courses'))
+    traits        = db.relationship('CourseTraits', backref='course')
     attributes    = db.relationship('Attribute',
                                     secondary=course_attributes,
                                     backref=db.backref('courses', lazy='dynamic'))
@@ -203,15 +203,44 @@ class Department(db.Model):
     def __repr__(self):
         return "<Department(code=%s, name=%s)>" % (self.code, self.name)
 
-class Trait(db.Model):
+class InstructorTrait(db.Model):
     """
-    Traits for either course or instructor
+    Traits for instructors
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String)
+
+    def __repr__(self):
+        return "<InstructorTrait(id=%s, description=%s)>" % (self.id, self.description)
+
+class CourseTrait(db.Model):
+    """
+    Traits for courses
     """
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String())
-    type = db.Column(db.String())
 
     def __repr__(self):
-        return "<Trait(id=%s, description=%s, type=%s)>" % (self.id, self.description, self.type)
+        return "<CourseTrait(id=%s, description=%s)>" % (self.id, self.description)
 
+
+class InstructorTraits(db.Model):
+    """
+    Association table for instructors and traits
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    instructor_name = db.Column(db.String(), db.ForeignKey('instructor.name'), primary_key=True)
+    trait_id = db.Column(db.Integer, db.ForeignKey('instructor_trait.id'), primary_key=True)
+    count = db.Column(db.Integer)
+    traits = db.relationship('InstructorTrait', backref=db.backref('instructor_traits', lazy='dynamic'))
+
+class CourseTraits(db.Model):
+    """
+    Association table for courses and traits
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
+    trait_id = db.Column(db.Integer, db.ForeignKey('course_trait.id'), primary_key=True)
+    count = db.Column(db.Integer)
+    traits = db.relationship('CourseTrait', backref=db.backref('course_traits', lazy='dynamic'))
 
