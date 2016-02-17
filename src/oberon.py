@@ -244,7 +244,7 @@ def signup():
     signup_request = request.get_json()
     print "Signup info is: %s" % signup_request
     if validate_signup(signup_request):
-        user = Student.query.filter_by(name=signup_request['email']).first()
+        user = Student.query.filter_by(email=signup_request['email']).first()
         if user:
             return json_response({'status': 'failure',
                                   'message': 'User already exists'}, 409)
