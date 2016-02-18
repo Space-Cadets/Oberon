@@ -1,93 +1,5 @@
 test_traits = [
     {
-        'desc': 'Interesting',
-        'type': 'course'
-    },
-    {
-        'desc': 'Math Heavy',
-        'type': 'course'
-    },
-    {
-        'desc': 'Writing Heavy',
-        'type': 'course'
-    },
-    {
-        'desc': 'Inspiring',
-        'type': 'course'
-    },
-    {
-        'desc': 'Slow Pace',
-        'type': 'course'
-    },
-    {
-        'desc': 'Brisk Pace',
-        'type': 'course'
-    },
-    {
-        'desc': 'Easy-A',
-        'type': 'course'
-    },
-    {
-        'desc': 'Difficult',
-        'type': 'course'
-    },
-    {
-        'desc': 'Assignment Heavy',
-        'type': 'course'
-    },
-    {
-        'desc': 'Project-Oriented',
-        'type': 'course'
-    },
-    {
-        'desc': 'Team-Oriented',
-        'type': 'course'
-    },
-    {
-        'desc': 'Collaborative',
-        'type': 'course'
-    },
-    {
-        'desc': 'Multi-disciplinary',
-        'type': 'course'
-    },
-    {
-        'desc': 'Introductory Level',
-        'type': 'course'
-    },
-    {
-        'desc': 'Intermediate Level',
-        'type': 'course'
-    },
-    {
-        'desc': 'Advanced Level',
-        'type': 'course'
-    },
-    {
-        'desc': 'Large Class',
-        'type': 'course'
-    },
-    {
-        'desc': 'Class or Seminar style',
-        'type': 'course'
-    },
-    {
-        'desc': 'Lab',
-        'type': 'course'
-    },
-    {
-        'desc': 'Small Class or Seminar Style Class',
-        'type': 'course'
-    },
-    {
-        'desc': 'Flipped Classroom',
-        'type': 'course'
-    },
-    {
-        'desc': 'Book Recommended',
-        'type': 'course'
-    },
-    {
         'desc': 'Inspiring',
         'type': 'instructor'
     },
@@ -100,27 +12,15 @@ test_traits = [
         'type': 'instructor'
     },
     {
-        'desc': 'Boring',
+        'desc': 'Unengaging',
         'type': 'instructor'
     },
     {
-        'desc': 'Difficult',
+        'desc': 'Challenging',
         'type': 'instructor'
     },
     {
-        'desc': 'Hard Grader',
-        'type': 'instructor'
-    },
-    {
-        'desc': 'Light Accent',
-        'type': 'instructor'
-    },
-    {
-        'desc': 'Heavy Accent',
-        'type': 'instructor'
-    },
-    {
-        'desc': 'Laptops forbidden',
+        'desc': 'Technology Forbidden',
         'type': 'instructor'
     },
     {
@@ -128,15 +28,7 @@ test_traits = [
         'type': 'instructor'
     },
     {
-        'desc': 'Easy to Contact',
-        'type': 'instructor'
-    },
-    {
         'desc': 'Helpful',
-        'type': 'instructor'
-    },
-    {
-        'desc': 'Easy-Grader',
         'type': 'instructor'
     },
     {
@@ -144,40 +36,51 @@ test_traits = [
         'type': 'instructor'
     },
     {
-        'desc': 'Out There',
-        'type': 'instructor'
+        'desc': 'Interesting',
+        'type': 'course'
     },
     {
-        'desc': 'Strict Deadlines',
-        'type': 'instructor'
+        'desc': 'Math Heavy',
+        'type': 'course'
     },
     {
-        'desc': 'Leniant Deadlines',
-        'type': 'instructor'
+        'desc': 'Writing Heavy',
+        'type': 'course'
     },
     {
-        'desc': 'Performs Research',
-        'type': 'instructor'
+        'desc': 'Slow Pace',
+        'type': 'course'
     },
     {
-        'desc': 'Down to Earth',
-        'type': 'instructor'
+        'desc': 'Fast Pace',
+        'type': 'course'
     },
     {
-        'desc': 'Hard of Hearing',
-        'type': 'instructor'
+        'desc': 'Difficult',
+        'type': 'course'
     },
     {
-        'desc': 'Cellphones forbidden',
-        'type': 'instructor'
+        'desc': 'Assignment Heavy',
+        'type': 'course'
     },
     {
-        'desc': 'Strict Attendance Policy',
-        'type': 'instructor'
+        'desc': 'Collaborative',
+	    'type': 'course'
     },
     {
-        'desc': 'Old Fashioned',
-        'type': 'instructor'
+	    'desc': 'Large Class',
+	    'type': 'course'
     },
-
+    {
+	    'desc': 'Seminar style',
+	    'type': 'course'
+    },
+    {
+	    'desc': 'Lecture Style',
+	    'type': 'course'
+    },
+    {
+	    'desc': 'Book Recommended',
+	    'type': 'course'
+    }
 ]
