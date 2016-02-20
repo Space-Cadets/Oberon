@@ -151,7 +151,7 @@ class DatabaseBuilder(object):
     def _get_or_create_course(self, course, department, instructors, attributes, restrictions, section):
         course_record = Course.query.filter_by(name=course.course_name).first()
         if not course_record:
-            course_record = Course(course.course_name, course.subject, course.course_number)
+            course_record = Course(name=course.course_name, subject=course.subject, subject_level=course.course_number)
             print "Adding Course: \"%s-%s\"" % (course.subject, course.course_number)
             self.num_new_courses += 1
         if course.course_name not in self.course_names:
