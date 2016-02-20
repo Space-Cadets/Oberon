@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["sha512_crypt"],
                            default="sha512_crypt",
                            sha512_crypt__default_rounds=45000)
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
 from fuzzywuzzy import fuzz, process
 from validate_email import validate_email
 from flask_jwt import JWT, jwt_required
@@ -217,6 +217,15 @@ def get_course_json(course):
        'traits': [], # blank for now
    }
 
+def trait_to_json(trait):
+    """
+    Given an InstructorTrait or CourseTrait object, returns it's json representation
+    """
+    return {
+        'id': trait.id,
+        'description': trait.description
+    }
+
 app = create_json_app(config.Config)
 # Set up security -------------------------------
 security = Security(app, user_datastore)
@@ -368,9 +377,19 @@ def get_recent_reviews():
         return json_response({'status': 'failure',
                               'message': 'A server error has occurred.'}, 500)
 
-@app.route('/traits', methods=['GET'])
+@app.route('/traits', methods=['GET', 'POST'])
 def get_all_traits():
-    pass
+    if request.method == 'GET':
+        instructor_traits = [ trait_to_json(trait) for trait in InstructorTrait.query.all() ]
+        course_traits = [ trait_to_json(trait) for trait in CourseTrait.query.all() ]
+        return json_response({'status': 'success',
+                              'instructor_traits': instructor_traits,
+                              'course_traits': course_traits}, 200)
+    elif request.method == 'POST':
+        data = request.get_json()
+	return "Add Traits"
+        #Add trait to db
+
 
 if __name__ == "__main__":
     app.run(debug=True)
