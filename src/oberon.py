@@ -51,7 +51,6 @@ def authenticate(username, password):
     return None
 
 def jwt_identity(payload):
-    print payload
     user = user_datastore.find_user(email=payload['identity'])
     return user
 
@@ -389,6 +388,14 @@ def get_all_traits():
         data = request.get_json()
 	return "Add Traits"
         #Add trait to db
+
+@app.route('/user', methods=['GET'])
+@jwt_required()
+def get_user_info():
+    token = request.headers['Authorization'].split(' ')[1]
+    user_info = jwt.jwt_decode_callback(token)
+    return json_response({'status': 'success',
+                          'user': user_info}, 200)
 
 
 if __name__ == "__main__":
