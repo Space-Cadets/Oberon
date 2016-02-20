@@ -168,10 +168,10 @@ class Course(db.Model):
                                     #primaryjoin=("course_restrictions.c.course_id==id"),
                                     backref=db.backref('courses', lazy='dynamic'))
 
-    def __init__(self, name, subject, subject_level):
-            self.name = name
-            self.subject = subject
-            self.subject_level = subject_level
+    # def __init__(self, name, subject, subject_level):
+    #         self.name = name
+    #         self.subject = subject
+    #         self.subject_level = subject_level
             #self.description = description
 
     def __repr__(self):
@@ -234,12 +234,17 @@ class InstructorTraits(db.Model):
     count = db.Column(db.Integer)
     traits = db.relationship('InstructorTrait', backref=db.backref('instructor_traits', lazy='dynamic'))
 
+    def __repr__(self):
+        #print self.trait_id
+        #traits = str(self.traits)
+        return "<InstructorTraits(id=%s, instructor_name=%s, count=%s)>" % (self.id, self.instructor_name, self.count)
+
 class CourseTraits(db.Model):
     """
     Association table for courses and traits
     """
     id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)
+    course_name = db.Column(db.String(), db.ForeignKey('course.name'), primary_key=True)
     trait_id = db.Column(db.Integer, db.ForeignKey('course_trait.id'), primary_key=True)
     count = db.Column(db.Integer)
     traits = db.relationship('CourseTrait', backref=db.backref('course_traits', lazy='dynamic'))

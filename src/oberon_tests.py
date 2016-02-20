@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["sha512_crypt"],
                            sha512_crypt__default_rounds=45000)
 import config
 
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, InstructorTrait, CourseTrait
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
 
 headers = {'Content-Type': 'application/json'}
 
@@ -117,22 +117,49 @@ class OberonTestCase(TestCase):
             "password": "test",
         }
         signup_failure4 = self.client.post('/signup', data=json.dumps(invalid_pass), headers=headers)
-        self.assert400(signup_failure4, "Invalid Passsword")
+        self.assert400(signup_failure4, "Invalid Password")
+
+
+    def testAddInstructor(self):
+        instructor_record = Instructor(name="Anany Levitin")
+        db.session.add(instructor_record)
+        db.session.commit()
+        self.assertIsNotNone(Instructor.query.filter_by(name="Anany Levitin").first())
 
     #InstructorTrait tests ----------------------------------------------------------
     def testAddInstructorTraits(self):
         trait_record = InstructorTrait(description="Challenging")
         db.session.add(trait_record)
         db.session.commit()
-        print list(InstructorTrait.query.all())
         self.assertIsNotNone(InstructorTrait.query.get(1))
 
     def testGetNonExistantInstructorTrait(self):
         self.assertIsNone(InstructorTrait.query.get(1))
 
     def testAddTraitToInstructor(self):
-        pass
+        # Add instructor to db
+        instructor_record = Instructor(name="Anany Levitin")
+        db.session.add(instructor_record)
+        db.session.commit()
+        self.assertIsNotNone(Instructor.query.filter_by(name="Anany Levitin").first())
 
+        #add Trait to db
+        trait_record = InstructorTrait(description="Challenging")
+        db.session.add(trait_record)
+        db.session.commit()
+        self.assertIsNotNone(InstructorTrait.query.get(1))
+
+        # Add trait to instructor
+        instructor_trait_record = InstructorTraits(instructor_name="Anany Levitin", trait_id=trait_record.id, count=0)
+        db.session.add(instructor_trait_record)
+        db.session.commit()
+        self.assertTrue(instructor_record.traits)
+
+        # Test Increment trait count
+        instructor_trait_record.count += 1
+        db.session.add(instructor_trait_record)
+        db.session.commit()
+        self.assertEquals(instructor_trait_record.count, 1)
 
     # CourseTrait tests ------------------------------------------------------------
     def testAddCourseTraits(self):
@@ -143,6 +170,31 @@ class OberonTestCase(TestCase):
 
     def testGetNonExistantCourseTrait(self):
         self.assertIsNone(CourseTrait.query.get(5))
+
+    def testAddTraitToCourse(self):
+        # Add course to db
+        course_record = Course(name="Analysis of Algorithms")
+        db.session.add(course_record)
+        db.session.commit()
+        self.assertIsNotNone(Course.query.filter_by(name="Analysis of Algorithms").first())
+
+        #add Trait to db
+        trait_record = CourseTrait(description="Challenging")
+        db.session.add(trait_record)
+        db.session.commit()
+        self.assertIsNotNone(CourseTrait.query.get(1))
+
+        # Add trait to course
+        course_trait_record = CourseTraits(course_name="Analysis of Algorithms", trait_id=trait_record.id, count=0)
+        db.session.add(course_trait_record)
+        db.session.commit()
+        self.assertTrue(course_record.traits)
+
+        # Test Increment trait count
+        course_trait_record.count += 1
+        db.session.add(course_trait_record)
+        db.session.commit()
+        self.assertEquals(course_trait_record.count, 1)
 
     def tearDown(self):
         self.db.session.commit()
