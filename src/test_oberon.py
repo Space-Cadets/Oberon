@@ -149,6 +149,13 @@ class OberonTestCase(TestCase):
         db.session.commit()
         self.assertIsNotNone(InstructorTrait.query.get(1))
 
+        traits = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eigth"]
+        for trait in traits:
+            db.session.add(InstructorTrait(description=trait))
+            db.session.commit()
+        self.assertEquals(len(InstructorTrait.query.all()), 9)
+        #print InstructorTrait.query.all()
+
         # Add trait to instructor
         instructor_trait_record = InstructorTraits(instructor_name="Anany Levitin", trait_id=trait_record.id, count=0)
         db.session.add(instructor_trait_record)
@@ -160,6 +167,30 @@ class OberonTestCase(TestCase):
         db.session.add(instructor_trait_record)
         db.session.commit()
         self.assertEquals(instructor_trait_record.count, 1)
+
+        record = InstructorTraits.query.filter_by(instructor_name="Anany Levitin").filter_by(trait_id=1).first()
+        self.assertIsNotNone(record)
+        record2 = InstructorTraits.query.filter_by(instructor_name="AnanyLevitin").filter_by(trait_id=1).first()
+        self.assertIsNone(record2)
+
+        traits_test = {
+            'instructor': 'Anany Levitin',
+            'course': 'Analysis of Algorithms',
+            'instructor_traits': [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            'course_traits': []
+        }
+        add_traits_success = self.client.post('/traits', data=json.dumps(traits_test), headers=headers)
+        self.assertEquals(len(Instructor.query.filter_by(name="Anany Levitin").first().traits), 9)
+        self.assertEquals(InstructorTraits.query.filter_by(instructor_name="Anany Levitin").filter_by(trait_id=1).first().count, 2)
+
+        traits_test2 = {
+            'instructor': 'Anany Levitin',
+            'course': 'Analysis of Algorithms',
+            'instructor_traits': [1],
+            'course_traits': []
+        }
+        add_traits_success2 = self.client.post('/traits', data=json.dumps(traits_test), headers=headers)
+        self.assertEquals(InstructorTraits.query.filter_by(instructor_name="Anany Levitin").filter_by(trait_id=1).first().count, 3)
 
     # CourseTrait tests ------------------------------------------------------------
     def testAddCourseTraits(self):
@@ -195,6 +226,7 @@ class OberonTestCase(TestCase):
         db.session.add(course_trait_record)
         db.session.commit()
         self.assertEquals(course_trait_record.count, 1)
+
 
     def tearDown(self):
         self.db.session.commit()

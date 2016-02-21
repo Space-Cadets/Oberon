@@ -376,6 +376,26 @@ def get_recent_reviews():
         return json_response({'status': 'failure',
                               'message': 'A server error has occurred.'}, 500)
 
+def increment_or_add_trait(trait_type, course, instructor, id):
+    record = None
+    if trait_type == "instructor":
+        record = InstructorTraits.query.filter_by(instructor_name=instructor).filter_by(trait_id=id).first()
+        if not record:
+            record = InstructorTraits(instructor_name=instructor, trait_id=id, count=1)
+        else:
+            record.count += 1
+    if trait_type == "course":
+        record = CourseTraits.query.filter_by(course_name=course).filter_by(trait_id=id).first()
+        if not record:
+            record = CourseTraits(course_name=course, trait_id=id, count=1)
+        else:
+            record.count += 1
+    if record:
+        db.session.add(record)
+        db.session.commit()
+    return None
+
+
 @app.route('/traits', methods=['GET', 'POST'])
 def get_all_traits():
     if request.method == 'GET':
@@ -386,8 +406,16 @@ def get_all_traits():
                               'course_traits': course_traits}, 200)
     elif request.method == 'POST':
         data = request.get_json()
-	return "Add Traits"
-        #Add trait to db
+        instructor = data['instructor']
+        course = data['course']
+        inst_trait_ids = data['instructor_traits']
+        course_trait_ids = data['course_traits']
+        for trait_id in inst_trait_ids:
+            increment_or_add_trait('instructor', course, instructor, trait_id)
+        for trait_id in course_trait_ids:
+            increment_or_add_trait('course', course, instructor, trait_id)
+        return json_response({'status': 'success',
+                              'message': 'All traits added successfully'}, 200)
 
 @app.route('/user', methods=['GET'])
 @jwt_required()
