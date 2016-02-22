@@ -235,8 +235,6 @@ class InstructorTraits(db.Model):
     traits = db.relationship('InstructorTrait', backref=db.backref('instructor_traits', lazy='dynamic'))
 
     def __repr__(self):
-        #print self.trait_id
-        #traits = str(self.traits)
         return "<InstructorTraits(id=%s, instructor_name=%s, count=%s)>" % (self.id, self.instructor_name, self.count)
 
 class CourseTraits(db.Model):
@@ -248,4 +246,7 @@ class CourseTraits(db.Model):
     trait_id = db.Column(db.Integer, db.ForeignKey('course_trait.id'), primary_key=True)
     count = db.Column(db.Integer)
     traits = db.relationship('CourseTrait', backref=db.backref('course_traits', lazy='dynamic'))
+
+    def __repr__(self):
+        return "<CourseTraits(id=%s, course_name=%s, count=%s)>" % (self.id, self.course_name, self.count)
 

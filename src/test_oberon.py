@@ -227,7 +227,6 @@ class OberonTestCase(TestCase):
         db.session.commit()
         self.assertEquals(course_trait_record.count, 1)
 
-
     def tearDown(self):
         self.db.session.commit()
         self.db.drop_all()
