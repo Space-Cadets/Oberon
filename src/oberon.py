@@ -422,6 +422,9 @@ def get_all_traits():
 def get_user_info():
     token = request.headers['Authorization'].split(' ')[1]
     user_info = jwt.jwt_decode_callback(token)
+    user_record = Student.query.filter_by(email=user_info['identity']).first()
+    user_info['first_name'] = user_record.first_name
+    user_info['last_name'] = user_record.last_name
     return json_response({'status': 'success',
                           'user': user_info}, 200)
 
