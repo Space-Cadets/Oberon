@@ -213,6 +213,7 @@ def get_course_json(course):
        'subject': course.subject,
        'reviews': get_course_reviews(course),
        'instructors': get_course_instructors(course),
+        'sections': sorted([section.crn for section in course.sections]),
        'traits': [], # blank for now
    }
 
@@ -315,7 +316,7 @@ def get_course(course_name):
         course = Course.query.filter_by(name=course_name).first()
         if course:
             course_data = get_course_json(course)
-            course_data['sections'] = sorted([section.crn for section in course.sections])
+            #course_data['sections'] = sorted([section.crn for section in course.sections])
             return json_response({'status': 'success',
                               'data': course_data}, 200)
         else:
