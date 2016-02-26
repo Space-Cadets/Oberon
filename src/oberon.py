@@ -342,6 +342,7 @@ def post_review():
         db.session.add(student_record)
         db.session.add(section_record)
         db.session.add(instructor_record)
+        db.session.commit()
         return json_response({'status': 'success',
                               'message': 'Review Successfully Added'}, 200)
     except:
