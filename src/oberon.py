@@ -331,7 +331,7 @@ def get_course(course_name):
 def post_review():
     try:
         review_request = request.get_json()
-        review_record = Review(class_rating=review_request['classRating'], inst_rating=review_request['instRating'], review_body=review_request['reviewBody'])
+        review_record = Review(class_rating=review_request['classRating'], inst_rating=review_request['instRating'], review_body=review_request['reviewBody'], date_created=datetime.now())
         student_record = Student.query.filter_by(email=review_request['student']).first()
         section_record = Section.query.filter_by(crn=review_request['section']).first()
         instructor_record = Instructor.query.filter_by(name=review_request['instructor']).first()
