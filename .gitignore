@@ -2,7 +2,6 @@ config.py
 secrets.py
 request_handler.py
 .DS*
-venv
 private.py
 *.html
 *.pyc
