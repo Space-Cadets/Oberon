@@ -1,9 +1,15 @@
 from models import Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
 from passlib.context import CryptContext
+from flask import Flask, jsonify, request, make_response
 pwd_context = CryptContext(schemes=["sha512_crypt"],
                            default="sha512_crypt",
                            sha512_crypt__default_rounds=45000)
 
+from validate_email import validate_email
+import itertools
+
+def json_response(body, code):
+    return make_response(jsonify(body), code)
 
 def validate_signup(signup_json):
     # check all fields are present and not none
@@ -123,7 +129,8 @@ def get_course_reviews(course):
     """
     Given a course object, returns a list of all of the reviews of that course
     """
-    review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
+    #review_objects = list(itertools.chain.from_iterable([section.reviews for section in course.sections]))
+    review_objects = course.reviews
     return [review_to_json(review) for review in review_objects]
 
 def get_course_instructors(course):

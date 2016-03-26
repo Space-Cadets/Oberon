@@ -41,6 +41,7 @@ class DatabaseBuilder(object):
         self.num_new_sections = 0
 
     def build(self):
+        print "Building database from courses"
         for course in self.courses:
             self._add_course_data(course)
         #user_role = Role(name='user', description="Just regular guy")
@@ -53,6 +54,7 @@ class DatabaseBuilder(object):
         db.session.commit()
 
     def print_status(self):
+        print "------------------------------------------------------------------"
         print "Summary for Courses parsed"
         print "Total number of courses: %s" % self.num_courses
         print "Total number of sections: %s" % self.num_sections
@@ -63,7 +65,7 @@ class DatabaseBuilder(object):
         print "Number of new sections: %s" % self.num_new_sections
         print "Number of new instructors: %s" % self.num_new_instructors
         print "Number of new departments: %s" % self.num_new_departments
-
+        print "------------------------------------------------------------------"
     def _add_course_data(self, course):
         department = self._get_or_create_department(course)
         instructors = self._get_or_create_instructors(course)
@@ -77,7 +79,7 @@ class DatabaseBuilder(object):
         if not department_record:
             department_record = Department(course.subject, departments[course.subject])
             db.session.add(department_record)
-            print "Adding Department: \"%s\"" % course.subject
+            #print "Adding Department: \"%s\"" % course.subject
             #db.session.commit()
             self.num_new_departments += 1
         if course.subject not in self.departments:
@@ -96,7 +98,7 @@ class DatabaseBuilder(object):
             instructor_record = Instructor.query.filter_by(name=instructor).first()
             if not instructor_record:
                 instructor_record = Instructor(instructor)
-                print "Adding Instructor: \"%s\"" % instructor
+                #print "Adding Instructor: \"%s\"" % instructor
                 self.num_new_instructors += 1
             instructor_record.departments.append(self._get_or_create_department(course))
             db.session.add(instructor_record)
@@ -113,7 +115,7 @@ class DatabaseBuilder(object):
             attribute_record = Attribute.query.filter_by(name=attribute).first()
             if not attribute_record:
                 attribute_record = Attribute(attribute)
-                print "Adding Attribute: \"%s\"" % attribute
+                #print "Adding Attribute: \"%s\"" % attribute
                 db.session.add(attribute_record)
             attribute_list.append(attribute_record)
 
@@ -126,7 +128,7 @@ class DatabaseBuilder(object):
             restriction_record = Restriction.query.filter_by(text=restriction).first()
             if not restriction_record:
                 restriction_record = Restriction(restriction)
-                print "Adding Restriction: \"%s\"" % restriction
+                #print "Adding Restriction: \"%s\"" % restriction
                 db.session.add(restriction_record)
                 #db.session.commit()
             restriction_list.append(restriction_record)
@@ -137,7 +139,7 @@ class DatabaseBuilder(object):
         if not section_record:
             section_record = Section("Spring 2015", course.crn, course.start_time,
                                      course.end_time, course.days, course.enrollment)
-            print "Adding Section: \"%s\"" % course.crn
+            #print "Adding Section: \"%s\"" % course.crn
             self.num_new_sections += 1
         section_record.instructors = instructors
         db.session.add(section_record)
@@ -151,7 +153,7 @@ class DatabaseBuilder(object):
         course_record = Course.query.filter_by(name=course.course_name).first()
         if not course_record:
             course_record = Course(name=course.course_name, subject=course.subject, subject_level=course.course_number)
-            print "Adding Course: \"%s-%s\"" % (course.subject, course.course_number)
+            #print "Adding Course: \"%s-%s\"" % (course.subject, course.course_number)
             self.num_new_courses += 1
         if course.course_name not in self.course_names:
             self.num_courses += 1

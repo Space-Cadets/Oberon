@@ -95,12 +95,12 @@ def signup():
     print "Signup info is: %s" % signup_request
     if validate_signup(signup_request):
         user = Student.query.filter_by(email=signup_request['email']).first()
-        user_exists = user_exists(signup_request['email'])
-        if user_exists:
+        user = user_exists(signup_request['email'])
+        if user:
             return json_response({'status': 'failure',
                                   'message': 'User already exists'}, 409)
         else:
-            add_user(signup_request['email'], signup_request['firstName'], signup_request['lastName'], password=signup_request['password'])
+            add_user(db, signup_request['email'], signup_request['firstName'], signup_request['lastName'], password=signup_request['password'])
             return json_response({'status': 'success',
                                   'message': 'User successfully created'}, 200)
     else:
@@ -149,20 +149,20 @@ def get_instructor(instructor_name):
 
 @app.route('/courses/<course_name>', methods=['GET'])
 def get_course(course_name):
-    try:
-        course = Course.query.filter_by(name=course_name).first()
-        if course:
-            course_data = get_course_json(course)
+    #try:
+    course = Course.query.filter_by(name=course_name).first()
+    if course:
+        course_data = get_course_json(course)
             #course_data['sections'] = sorted([section.crn for section in course.sections])
-            return json_response({'status': 'success',
-                              'data': course_data}, 200)
-        else:
-            message = "Bad Request. No course named %s" % course_name
-            return json_response({'status': 'failure',
-                                  'message': message}, 400)
-    except:
+        return json_response({'status': 'success',
+                                  'data': course_data}, 200)
+    else:
+        message = "Bad Request. No course named %s" % course_name
         return json_response({'status': 'failure',
-                              'message': 'Server error has occured'}, 500)
+                              'message': message}, 400)
+    # except:
+    #     return json_response({'status': 'failure',
+    #                           'message': 'Server error has occured'}, 500)
 
 @app.route('/reviews', methods=['POST'])
 def post_review():
