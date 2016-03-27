@@ -1,4 +1,4 @@
-from oberon import create_json_app
+from core import create_json_app
 from mappings import departments
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
 from models import user_datastore
@@ -18,12 +18,12 @@ class DatabaseBuilder(object):
     Builds the initial database from a list of courses
     """
 
-    def __init__(self, courses):
+    def __init__(self, courses, config=config.Config):
         """
         Courses is a list of course objects
         """
         self.courses = courses
-        self.app = create_json_app(config.Config)
+        self.app = create_json_app(config)
         self.app.app_context().push()
 
         self.instructors = {}

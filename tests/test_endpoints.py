@@ -78,7 +78,6 @@ class SignUpTestCase(TestCase):
         signup_failure4 = self.client.post('/signup', data=json.dumps(invalid_pass), headers=headers)
         self.assert400(signup_failure4, "Invalid Password")
 
-
 if __name__ == "__main__":
     unittest.main()
 
