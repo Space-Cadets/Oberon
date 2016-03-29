@@ -16,7 +16,6 @@ background / startup processes. Here's a good [link for that](https://www.codefe
 3. ```which psql``` should match /usr/local/bin/psql
 4. Boot by typing ```psql``` in your shell
 
-
 ** How to Initialize your DB
 1. ```createdb VillanovaCourseDB```
 2. ```createdb TestVillanovaCourseDB```
@@ -32,7 +31,6 @@ you can even see your tables and relations by typing ```\d``` in the CLI
 3. Build the database from your HTML file by running the following script
 4. ```python setup.py [-filename]```
 5. The database will now include all of the information from the HTML file
-
 
 ** Run the server
 1. Run the run.py script to start the server

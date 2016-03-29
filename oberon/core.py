@@ -194,12 +194,14 @@ def post_review():
     #    return json_response({'status': 'failure'}, 500)
 
 @app.route('/reviews/student/<student_email>', methods=['GET'])
+@jwt_required()
 def get_student_reviews(student_email):
     student = Student.query.filter_by(email=student_email).first()
     reviews = [review_to_json(review) for review in student.reviews]
     return json_response({'reviews': reviews}, 200)
 
 @app.route('/reviews/<id>', methods=['GET'])
+@jwt_required()
 def get_single_review(id):
     try:
         review = Review.query.get(id)
@@ -214,6 +216,7 @@ def get_single_review(id):
                               'message': 'A server error has occured.'}, 500)
 
 @app.route('/recent', methods=['GET'])
+@jwt_required()
 def get_recent_reviews():
     try:
         reviews = Review.query.order_by(desc(Review.date_created)).limit(10).all()
