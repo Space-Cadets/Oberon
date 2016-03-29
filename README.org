@@ -19,8 +19,7 @@ background / startup processes. Here's a good [link for that](https://www.codefe
 ** How to Initialize your DB
 1. ```createdb VillanovaCourseDB```
 2. ```createdb TestVillanovaCourseDB```
-3. Make sure your config is in the root of the local repository and then run ```python oberon.py```
-4. Now try this ```psql VillanovaCourseDB``` and you should be presented with the CLI for postgres
+3. Now try this ```psql VillanovaCourseDB``` and you should be presented with the CLI for postgres
 you can even see your tables and relations by typing ```\d``` in the CLI
 
 <img src="psqltables.png" width="400" />
@@ -31,6 +30,10 @@ you can even see your tables and relations by typing ```\d``` in the CLI
 3. Build the database from your HTML file by running the following script
 4. ```python setup.py [-filename]```
 5. The database will now include all of the information from the HTML file
+
+** Running the Test Suite
+1. From the top level of the repo, run the following shell command
+```nose2```
 
 ** Run the server
 1. Run the run.py script to start the server
