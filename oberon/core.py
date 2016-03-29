@@ -92,7 +92,7 @@ def index():
 def signup():
     # input validation here
     signup_request = request.get_json()
-    print "Signup info is: %s" % signup_request
+    #print "Signup info is: %s" % signup_request
     if validate_signup(signup_request):
         user = Student.query.filter_by(email=signup_request['email']).first()
         user = user_exists(signup_request['email'])

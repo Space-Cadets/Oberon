@@ -3,6 +3,7 @@ from mappings import departments
 from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
 from models import user_datastore
 from datetime import datetime
+from scraper import NovaCourse
 # from test_users import test_users
 # from test_reviews import test_reviews
 # from test_traits import test_traits
@@ -40,14 +41,20 @@ class DatabaseBuilder(object):
         self.num_sections = 0
         self.num_new_sections = 0
 
-    def build(self):
+    def build(self, output=True):
         print "Building database from courses"
+
         for course in self.courses:
-            self._add_course_data(course)
+            if type(course) == dict:
+                course_obj = NovaCourse(course['subject'], course['course_number'], course['section_number'], course['course_name'], course['crn'], course['enrollment'], course['days'], course['start_time'], course['end_time'], course['location'], course['instructor'], course['comment'], course['attributes'], course['restrictions'])
+                self._add_course_data(course_obj)
+            else:
+                self._add_course_data(course)
         #user_role = Role(name='user', description="Just regular guy")
         #db.session.add(user_role)
         #db.session.commit()
-        self.print_status()
+        if output:
+            self.print_status()
         #self.add_users()
         #self.add_reviews()
         #self.add_traits()
