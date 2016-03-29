@@ -62,3 +62,16 @@ class GetCoursesTestCase(TestCase):
         for course in json_data["data"]:
             for key in data_keys:
                 self.assertTrue(key in course, "Course in response must have key %s" % key)
+
+    def test_get_course_unauth(self):
+        course = self.client.get('/courses/analysis of algorithms', headers=headers)
+        self.assert401(course, "/courses/<course_name> should return 401 if not authorized")
+
+    def test_get_course_auth(self):
+        response = self.client.get('/courses/Analysis of Algorithms', headers=auth_header)
+        data = json.loads(response.data)
+        self.assertTrue("data" in data, "Response must have top level key \"data\"")
+        self.assertTrue("status" in data, "Response must have top level key \"status\"")
+        second_level = ["instructors", "name", "reviews", "sections", "subject", "subject_level", "traits"]
+        for key in second_level:
+            self.assertTrue(key in data["data"], "Response[\"data\"] must have key \"%s\"" % key)

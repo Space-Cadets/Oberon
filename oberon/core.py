@@ -148,6 +148,7 @@ def get_instructor(instructor_name):
                               'message': 'Server Error has occured'}, 500)
 
 @app.route('/courses/<course_name>', methods=['GET'])
+@jwt_required()
 def get_course(course_name):
     #try:
     course = Course.query.filter_by(name=course_name).first()
