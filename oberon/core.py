@@ -124,6 +124,7 @@ def get_courses(search_string):
                           'data': course_data}, 200)
 
 @app.route('/instructors/f/<search_string>', methods=['GET'])
+@jwt_required()
 def get_instructors(search_string):
     instructor_names = [instructor.name for instructor in Instructor.query.all()]
     instructors = [instructor for instructor in process.extract(search_string, instructor_names, limit=100) if instructor[1] > 60]
@@ -132,6 +133,7 @@ def get_instructors(search_string):
                           'data': instructor_data}, 200)
 
 @app.route('/instructors/<instructor_name>', methods=['GET'])
+@jwt_required()
 def get_instructor(instructor_name):
     try:
         instructor = Instructor.query.filter_by(name=instructor_name).first()
@@ -166,19 +168,23 @@ def get_course(course_name):
     #                           'message': 'Server error has occured'}, 500)
 
 @app.route('/reviews', methods=['POST'])
+@jwt_required()
 def post_review():
     #try:
     review_request = request.get_json()
     review_record = Review(class_rating=review_request['classRating'], inst_rating=review_request['instRating'], review_body=review_request['reviewBody'], date_created=datetime.now())
     student_record = Student.query.filter_by(email=review_request['student']).first()
-    section_record = Section.query.filter_by(crn=review_request['section']).first()
+    course_record = Course.query.filter_by(name=review_request["course"]).first()
+    #section_record = Section.query.filter_by(crn=review_request['section']).first()
     instructor_record = Instructor.query.filter_by(name=review_request['instructor']).first()
     student_record.reviews.append(review_record)
-    section_record.reviews.append(review_record)
+    course_record.reviews.append(review_record)
+    #section_record.reviews.append(review_record)
     instructor_record.reviews.append(review_record)
     db.session.add(review_record)
     db.session.add(student_record)
-    db.session.add(section_record)
+    #db.session.add(section_record)
+    db.session.add(course_record)
     db.session.add(instructor_record)
     db.session.commit()
     return json_response({'status': 'success',

@@ -37,10 +37,9 @@ def review_to_json(review):
     return {
         'text': review.review_body,
         'class_rating': review.class_rating,
-        'section_crn': review.section_crn,
-        'course': review.section.course.name,
-        'subject': review.section.course.subject,
-        'subject_level': review.section.course.subject_level,
+        'course': review.course.name,
+        'subject': review.course.subject,
+        'subject_level': review.course.subject_level,
         'instructor_name': review.instructor_name,
         'inst_rating': review.inst_rating,
         'student': review.student_email,
