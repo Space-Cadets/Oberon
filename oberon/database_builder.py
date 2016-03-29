@@ -42,7 +42,8 @@ class DatabaseBuilder(object):
         self.num_new_sections = 0
 
     def build(self, output=True):
-        print "Building database from courses"
+        if output:
+            print "Building database from courses"
 
         for course in self.courses:
             if type(course) == dict:

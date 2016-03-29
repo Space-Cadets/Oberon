@@ -27,6 +27,7 @@ valid_post_review_req = {
     "classRating": "5",
     "instRating": "5",
     "student": "signupsuccess@villanova.edu",
+    "traits": [0, 1, 2, 3, 4, 5],
     "reviewBody": "This is a test review body.",
     "instructor": "Anany Levitin",
     "course": "Analysis of Algorithms"
@@ -36,12 +37,12 @@ invalid_post_review_req = {
     "classRating": "5",
     "instRating": "5",
     "student": "signupsuccess@villanova.edu",
+    "traits": [0, 1, 2, 3, 4, 5],
     "reviewBody": "This is a test review body.",
     "instructor": "Anany Levitin",
     #"course": "Analysis of Algorithms"
 
     # Request is malformed due to missing "course" key
-   
 }
 
 class GetCoursesTestCase(TestCase):
@@ -109,7 +110,6 @@ class GetCoursesTestCase(TestCase):
 
     def test_get_instructors_auth(self):
         response = self.client.get('/instructors/f/levitin', headers = auth_header)
-        print response.data
         self.assert200(response, "/instructors/f/<instructor> should return 200 on authorized GET request")
         data = json.loads(response.data)
         self.assertTrue("data" in data, "Response must have top level key \"data\"")
@@ -150,7 +150,7 @@ class GetCoursesTestCase(TestCase):
         malformed_response = self.client.get('/reviews', data=json.dumps(invalid_post_review_req), headers=auth_header)
         self.assert405(malformed_response, "POST to /reviews should return 405 if authorized but the request is malformed")
 
-        # Check for existence of review
+        # Valid post request -- successfully written
         response2 = self.client.get('/reviews/student/signupsuccess@villanova.edu', headers = auth_header)
         self.assert200(response2, "GET /reviews/student/<student_email> should return 200 if authorized")
 

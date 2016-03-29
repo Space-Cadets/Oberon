@@ -40,7 +40,7 @@ def make_json_error(ex):
     { "message": "405: Method Not Allowed" }
     """
     response = jsonify(message=str(ex))
-    print response
+    #print response
     response.status_code = (ex.code
                                 if isinstance(ex, HTTPException)
                                 else 500)
@@ -172,6 +172,7 @@ def get_course(course_name):
 def post_review():
     #try:
     review_request = request.get_json()
+    #print review_request
     review_record = Review(class_rating=review_request['classRating'], inst_rating=review_request['instRating'], review_body=review_request['reviewBody'], date_created=datetime.now())
     student_record = Student.query.filter_by(email=review_request['student']).first()
     course_record = Course.query.filter_by(name=review_request["course"]).first()
