@@ -31,6 +31,11 @@ you can even see your tables and relations by typing ```\d``` in the CLI
 4. ```python setup.py [-filename]```
 5. The database will now include all of the information from the HTML file
 
+** Set up the Configurations
+1. From the dropbox, retrieve the config and private files
+2. Place them into /Oberon/oberon
+3. These files are required
+
 ** Running the Test Suite
 1. From the top level of the repo, run the following shell command
 ```nose2```
@@ -38,8 +43,10 @@ you can even see your tables and relations by typing ```\d``` in the CLI
 ** Run the server
 1. Run the run.py script to start the server
 2. ```python run.py```
+
 * Recap
 1. Install Postgres correctly
 2. Create the Database
 3. Run the setup.py script and pass the HTML file as the command line argument
-4. Run the run.py script to start the server
+4. Run the test suite to make sure the build isn't broken
+5. Run the run.py script to start the server
