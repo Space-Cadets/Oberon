@@ -7,7 +7,6 @@ This repo contains the backend for the Villanova Courses platform
 
 * Setup Instructions
 ** Install Postgres [OSX for now]
-
 0. ```brew doctor``` to make sure your package manager is running properly
 1. ```brew update``` to update brew package links
 2. ```brew install postgres``` to install postgresql

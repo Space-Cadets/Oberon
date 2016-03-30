@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["sha512_crypt"],
                            sha512_crypt__default_rounds=45000)
 import config
 
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, Trait
 
 headers = {'Content-Type': 'application/json'}
 

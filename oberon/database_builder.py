@@ -1,9 +1,10 @@
 from core import create_json_app
 from mappings import departments
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, Role, Trait
 from models import user_datastore
 from datetime import datetime
 from scraper import NovaCourse
+from sample_data.sample_traits import test_traits
 # from test_users import test_users
 # from test_reviews import test_reviews
 # from test_traits import test_traits
@@ -58,7 +59,7 @@ class DatabaseBuilder(object):
             self.print_status()
         #self.add_users()
         #self.add_reviews()
-        #self.add_traits()
+        self.add_traits()
         db.session.commit()
 
     def print_status(self):
@@ -206,24 +207,31 @@ class DatabaseBuilder(object):
     #         db.session.add(section_record.instructors[0])
     #     db.session.commit()
 
-    # def add_traits(self):
-    #     print "Adding Traits"
-    #     for trait in test_traits:
-    #         trait_record = None
-    #         if trait['type'] == 'course':
-    #             trait_record = CourseTrait(description=trait['desc'])
-    #             print "Added trait %s" % trait['desc']
-    #         elif trait['type'] == 'instructor':
-    #             trait_record = InstructorTrait(description=trait['desc'])
-    #             print "Added trait %s" % trait['desc']
-    #         else:
-    #             raise Exception
+    def add_traits(self):
+        for trait in test_traits:
+            #print "Added trait %s" % trait['desc']
+            trait_record = Trait(type = trait['type'], description = trait['desc'])
+            db.session.add(trait_record)
+        db.session.commit()
 
-    #         if trait_record:
-    #             db.session.add(trait_record)
-    #         else:
-    #             raise Exception
-    #     db.session.commit()
+
+        # #print "Adding Traits"
+        # for trait in test_traits:
+        #     trait_record = None
+        #     if trait['type'] == 'course':
+        #         trait_record = CourseTrait(description=trait['desc'])
+        #         print "Added trait %s" % trait['desc']
+        #     elif trait['type'] == 'instructor':
+        #         trait_record = InstructorTrait(description=trait['desc'])
+        #         print "Added trait %s" % trait['desc']
+        #     else:
+        #         raise Exception
+
+        #     if trait_record:
+        #         db.session.add(trait_record)
+        #     else:
+        #         raise Exception
+        # db.session.commit()
 
     # def add_instructor_trait(self, instructor_name, trait_id):
     #     record = InstructorTraits(instructor_name=instructor_name, trait_id=trait_id, count=0)

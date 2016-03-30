@@ -6,7 +6,7 @@ from flask import Flask
 from flask.ext.testing import TestCase
 import config
 
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, Trait
 
 headers = {'Content-Type': 'application/json'}
 

@@ -1,4 +1,4 @@
-from models import Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
+from models import Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore
 from passlib.context import CryptContext
 from flask import Flask, jsonify, request, make_response
 pwd_context = CryptContext(schemes=["sha512_crypt"],
@@ -43,7 +43,8 @@ def review_to_json(review):
         'instructor_name': review.instructor_name,
         'inst_rating': review.inst_rating,
         'student': review.student_email,
-        'date_created': review.date_created.isoformat()
+        'date_created': review.date_created.isoformat(),
+        'traits': [trait.id for trait in review.traits]
     }
 
 def reviews_to_json(list_of_reviews):
@@ -93,7 +94,7 @@ def get_instructor_json(instructor):
         'name': instructor.name,
         'departments': [{'code': department.code,
                          'name': department.name} for department in instructor.departments],
-        'traits': [],
+        'traits': list(itertools.chain.from_iterable([[trait.id for trait in review.traits] for review in instructor.reviews])),
         'courses': courses_to_json(courses),
         'reviews': reviews,
         'rating': average_reviews(reviews, 'inst_rating')
@@ -113,7 +114,7 @@ def get_less_instructor_json(instructor):
         'name': instructor.name,
         'departments': [{'code': department.code,
                          'name': department.name} for department in instructor.departments],
-        'traits': [],
+        'traits': list(itertools.chain.from_iterable([[trait.id for trait in review.traits] for review in instructor.reviews])),
         'courses': courses_to_json(courses),
         'rating': average_reviews(reviews, 'inst_rating')
     }
@@ -145,22 +146,23 @@ def get_course_json(course):
     Given a course object, returns a list of it's json representation
     """
     return {
-       'name': course.name,
-       'subject_level': course.subject_level,
-       'subject': course.subject,
-       'reviews': get_course_reviews(course),
-       'instructors': get_course_instructors(course),
+        'name': course.name,
+        'subject_level': course.subject_level,
+        'subject': course.subject,
+        'reviews': get_course_reviews(course),
+        'instructors': get_course_instructors(course),
         'sections': sorted([section.crn for section in course.sections]),
-       'traits': [], # blank for now
-   }
+        'traits': list(itertools.chain.from_iterable([[trait.id for trait in review.traits] for review in course.reviews]))
+    }
 
 def trait_to_json(trait):
     """
-    Given an InstructorTrait or CourseTrait object, returns it's json representation
+    Given a Trait, returns its JSON representation
     """
     return {
         'id': trait.id,
-        'description': trait.description
+        'description': trait.description,
+        'type': trait.type
     }
 
 #-------------------------------------------------------------------------------------------

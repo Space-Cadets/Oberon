@@ -31,6 +31,7 @@ departments = {
     'EGEN': 'Engineering Entrepreneurship',
     'ETH': 'Ethics',
     'FRE': 'French',
+    'FFS': 'French and Francophone Studies',
     'GWS': 'Gender and Woman Studies',
     'GEV': 'Geography and the Environment',
     'GIS': 'Gloval Interdisciplinary Studies',

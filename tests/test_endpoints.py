@@ -11,7 +11,7 @@ pwd_context = CryptContext(schemes=["sha512_crypt"],
                            sha512_crypt__default_rounds=45000)
 import config
 
-from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, InstructorTrait, CourseTrait, InstructorTraits, CourseTraits
+from models import db, Department, Instructor, Attribute, Section, Restriction, Course, Student, Review, user_datastore, Role, Trait
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../oberon'))
 #sys.path.insert(0, os.path.abspath('../oberon/sample_data'))
@@ -27,7 +27,7 @@ valid_post_review_req = {
     "classRating": "5",
     "instRating": "5",
     "student": "signupsuccess@villanova.edu",
-    "traits": [0, 1, 2, 3, 4, 5],
+    "traits": [1, 2, 3, 4, 5, 18, 19, 20],
     "reviewBody": "This is a test review body.",
     "instructor": "Anany Levitin",
     "course": "Analysis of Algorithms"
@@ -37,7 +37,7 @@ invalid_post_review_req = {
     "classRating": "5",
     "instRating": "5",
     "student": "signupsuccess@villanova.edu",
-    "traits": [0, 1, 2, 3, 4, 5],
+    "traits": [1, 2, 3, 4, 5, 18, 19, 20],
     "reviewBody": "This is a test review body.",
     "instructor": "Anany Levitin",
     #"course": "Analysis of Algorithms"
@@ -133,7 +133,6 @@ class GetCoursesTestCase(TestCase):
         response2 = self.client.get('/instructors/abcdefghi', headers = auth_header)
         self.assert400(response2, '/instructors/<instructor> should return 400 if authorized and resource does not exist')
 
-
     def test_post_review_unauth(self):
         response = self.client.post('/reviews', data=json.dumps(valid_post_review_req), headers=headers)
         self.assert401(response, 'POST to /reviews should return 401 if not authorized')
@@ -141,10 +140,13 @@ class GetCoursesTestCase(TestCase):
         response2 = self.client.post('/reviews', data=json.dumps(invalid_post_review_req), headers=headers)
         self.assert401(response2, 'POST to /reviews should return 401 if not authorized')
 
+
     def test_post_review_auth(self):
         # valid post request
         response = self.client.post('/reviews', data=json.dumps(valid_post_review_req), headers = auth_header)
         self.assert200(response, "POST to /reviews should return 200 if authorized and request is valid")
+        data = json.loads(response.data)
+        print data
 
         # malformed post request
         malformed_response = self.client.get('/reviews', data=json.dumps(invalid_post_review_req), headers=auth_header)
@@ -158,3 +160,33 @@ class GetCoursesTestCase(TestCase):
         data = json.loads(response2.data)
         self.assertTrue('reviews' in data, "Response from GET /reviews/student/<student_email> should have a top level key \"reviews\"")
         self.assertTrue(len(data['reviews']) > 0, "Response from GET /reviews/student/<student_email should contain a review")
+
+        response3 = self.client.get('/courses/Analysis of Algorithms', headers = auth_header)
+        print response3.data
+        data2 = json.loads(response3.data)
+        self.assertEquals([1, 2, 3, 4, 5, 18, 19, 20], data2['data']['traits'], "traits should be equal to traits written in")
+
+    def test_get_traits_unauth(self):
+        response = self.client.get('/traits', headers = headers)
+        self.assert401(response, "GET /traits should return 401 if unauthorized")
+
+    def test_get_traits_auth(self):
+        response = self.client.get('/traits', headers = auth_header)
+        self.assert200(response, "GET /traits should return 200 if authorized")
+        data = json.loads(response.data)
+        self.assertTrue('status' in data, "Response must have top level key \"status\"")
+        self.assertTrue('data' in data, "Response must have top level key \"data\"")
+
+    def test_get_current_user_unauth(self):
+        response = self.client.get('/user', headers = headers)
+        self.assert401(response, "GET /user should return 401 if unauthorized")
+
+    def test_get_current_user_auth(self):
+        response = self.client.get('/user', headers = auth_header)
+        self.assert200(response, "GET /user should return 200 if authorized")
+        data = json.loads(response.data)
+        self.assertTrue('status' in data, "Response must have top level key \"status\"")
+        self.assertTrue('user' in data, "Response must have top level key \"user\"")
+        keys = ['first_name', 'last_name', 'exp', 'iat', 'nbf', 'identity']
+        for key in keys:
+            self.assertTrue(key in data['user'], "Response must have top level key %s" % key)
